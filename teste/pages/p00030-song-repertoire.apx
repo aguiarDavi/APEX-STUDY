@@ -10,6 +10,7 @@ page 30 (
         cursorFocus: doNotFocusCursor
     }
     security {
+        authorizationScheme: @ws-auth-leader
         pageAccessProtection: argumentsMustHaveChecksum
         formAutoComplete: false
     }

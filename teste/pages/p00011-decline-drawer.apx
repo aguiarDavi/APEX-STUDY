@@ -17,6 +17,7 @@ page 11 (
         cursorFocus: doNotFocusCursor
     }
     security {
+        authorizationScheme: @ws-auth-musician
         pageAccessProtection: argumentsMustHaveChecksum
         formAutoComplete: false
     }

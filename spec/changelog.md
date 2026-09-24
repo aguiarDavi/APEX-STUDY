@@ -6,6 +6,24 @@ This document records the architectural history, modifications made, challenges 
 
 ## 1. Activity Log
 
+### [2026-09-24] - Sprint 5: Security, APEX Authorization, Testing & Hardening Complete
+
+#### Added
+- **Declarative APEX Authorization Schemes ([`teste/shared-components/authorizations.apx`](file:///home/davi/Dev/apex-gemini/teste/shared-components/authorizations.apx))**:
+  - Implemented `WS_AUTH_LEADER` scheme verifying `:APP_USER` role is `LEADER` or `ADMIN` against `WS_MEMBERS`.
+  - Implemented `WS_AUTH_MUSICIAN` scheme verifying active membership in `WS_MEMBERS`.
+- **Page-Level Security Enforcement Across All 9 Pages**:
+  - Gated Leader Pages (Page 20, 21, 22, 30, 31, 32) strictly behind `WS_AUTH_LEADER`.
+  - Gated Musician Pages (Page 10, 11, 12) strictly behind `WS_AUTH_MUSICIAN`.
+  - Re-compiled and imported via SQLcl (`apex import`), achieving zero authorization leaks.
+- **Comprehensive E2E Security & Concurrency UAT Suite ([`tests/e2e/sprint5-security-uat.e2e.mjs`](file:///home/davi/Dev/apex-gemini/tests/e2e/sprint5-security-uat.e2e.mjs))**:
+  - Verified musician role `TEST_USER` cannot bypass URL routing to access Leader Matrix or Song Repertoire (Access Denied / 400 Bad Request).
+  - Verified leader role `DAVI` has uninterrupted administrative access across all operational modules.
+  - Verified optimistic locking token (`row_version_number`) raises `ORA-20002` when handling stale invitation responses.
+  - Verified proactive retroactive blockout conflict detection surfaces automatically on the Leader Matrix dashboard.
+  - Verified zero multi-instrument double-booking collisions across all automated scheduling runs.
+  - Asserted zero unhandled JavaScript console exceptions.
+
 ### [2026-09-24] - Sprint 4: Song Repertoire & Setlists Complete
 
 #### Added
@@ -233,6 +251,12 @@ This document records the architectural history, modifications made, challenges 
 * **The Resolution**:
   Inspected exact table definition in `spec/schema.md` and verified column existence against `ALL_TAB_COLUMNS`. Updated all page queries and DML processes to reference `BPM` exclusively.
 
+### 14. Workspace User Provisioning & Password Re-initialization
+* **The Problem**:
+  Testing role-based authorization requires distinct user identities (`TEST_USER` for `MUSICIAN` and `DAVI` for `LEADER`). Calling `apex_util.edit_user` with `p_web_password` failed to update passwords because `p_web_password` represents the old verification password, requiring `p_new_password`.
+* **The Resolution**:
+  Standardized user provisioning via `apex_util.create_user` with `p_change_password_on_first_use => 'N'`, validated authentication via `apex_util.is_login_password_valid`, and tested discrete browser sessions in Playwright.
+
 ---
 
 ## 3. Discoveries & Architectural Insights
@@ -251,3 +275,5 @@ This document records the architectural history, modifications made, challenges 
    - APEX automatically calculates session-level checksums for card action redirect links at render time when target page items have `sessionStateProtection: checksumRequiredSessionLevel`, allowing secure 1-click invitation acceptance without full page form submission.
 7. **Smart LOVs Eradicate Human Scheduling Errors**:
    - By embedding blockout period checks (`:P21_SERVICE_DATE BETWEEN mb.start_date AND mb.end_date`) and same-day service collision detection directly inside the LOV SQL query, leaders receive immediate visual warning cues (`⚠️ [BLOCKED OUT: Reason]`, `(Available)`) before saving assignments, avoiding back-and-forth friction with volunteers.
+8. **Declarative Page-Level Authorizations in APEXlang**:
+   - Applying `security { authorizationScheme: @ws-auth-leader }` at the page definition level provides ironclad security that intercepts direct URL manipulation in APEX before any region SQL queries or page processes execute.

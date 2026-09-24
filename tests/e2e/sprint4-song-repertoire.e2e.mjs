@@ -38,7 +38,7 @@ async function run() {
     // ------------------------------------------------------------------------
     console.log('[TEST 1] Authenticating and navigating to Song Repertoire (Page 30)...');
     await page.goto('http://localhost:8181/ords/r/davi/teste/login', { waitUntil: 'networkidle' });
-    await page.fill('#P9999_USERNAME', 'TEST_USER');
+    await page.fill('#P9999_USERNAME', 'DAVI');
     await page.fill('#P9999_PASSWORD', 'Oracle_Apex_2026!');
     
     await Promise.all([

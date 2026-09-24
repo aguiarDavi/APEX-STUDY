@@ -9,3 +9,47 @@ authorization administration-rights (
     }
 )
 
+authorization ws-auth-leader (
+    name: WS_AUTH_LEADER
+    type: plSqlFunctionBody
+    settings {
+        plsqlFunctionBody: ```plsql
+            DECLARE
+                v_role VARCHAR2(50);
+            BEGIN
+                SELECT member_role INTO v_role
+                  FROM ws_members
+                 WHERE UPPER(username) = UPPER(:APP_USER)
+                   AND is_active = 'Y';
+                RETURN v_role IN ('LEADER', 'ADMIN');
+            EXCEPTION
+                WHEN NO_DATA_FOUND THEN
+                    RETURN FALSE;
+            END;
+        ```
+    }
+    error {
+        errorMessage: Access denied. Only Worship Leaders and Administrators may manage services and repertoire.
+    }
+)
+
+authorization ws-auth-musician (
+    name: WS_AUTH_MUSICIAN
+    type: plSqlFunctionBody
+    settings {
+        plsqlFunctionBody: ```plsql
+            DECLARE
+                v_count NUMBER;
+            BEGIN
+                SELECT COUNT(*) INTO v_count
+                  FROM ws_members
+                 WHERE UPPER(username) = UPPER(:APP_USER)
+                   AND is_active = 'Y';
+                RETURN v_count > 0;
+            END;
+        ```
+    }
+    error {
+        errorMessage: Access denied. You must be an active worship team member to access this portal.
+    }
+)
