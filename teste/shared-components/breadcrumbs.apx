@@ -40,6 +40,20 @@ breadcrumb breadcrumb (
         }
     )
 
+    entry song-repertoire (
+        name: "Song Repertoire"
+        pageNumber: 30
+        execution {
+            sequence: 40
+        }
+        link {
+            target: {
+                page: 30
+            }
+        }
+    )
+
 )
+
 
 

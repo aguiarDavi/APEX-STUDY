@@ -1,0 +1,257 @@
+page 32 (
+    name: "Add Song to Setlist"
+    alias: SETLIST-MODAL
+    title: "Add Song to Setlist"
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+    dialog {
+        chained: false
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region form (
+        name: "Setlist Assignment"
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: REGION_POSITION_03
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P32_SERVICE_ID (
+        type: selectList
+        label {
+            label: "Target Service"
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT name || ' (' || TO_CHAR(service_date, 'DY, DD/MM/YYYY') || ')' AS d,
+                       id AS r
+                FROM ws_services
+                ORDER BY service_date DESC
+                ```
+            displayNullValue: false
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+
+    pageItem P32_SONG_ID (
+        type: selectList
+        label {
+            label: "Select Song"
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT title || ' - ' || NVL(artist, 'Traditional') || ' (Orig: ' || default_key || ')' AS d,
+                       id AS r
+                FROM ws_songs
+                WHERE is_active = 'Y'
+                ORDER BY title ASC
+                ```
+            displayNullValue: true
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+
+    pageItem P32_SERVICE_KEY (
+        type: selectList
+        label {
+            label: "Performance / Transposed Key"
+            alignment: left
+        }
+        layout {
+            sequence: 30
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT column_value AS d, column_value AS r 
+                FROM TABLE(sys.odcivarchar2list('C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#','Bb','B'))
+                ```
+            displayNullValue: false
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+
+    pageItem P32_NOTES (
+        type: textField
+        label {
+            label: "Arrangement Notes"
+            alignment: left
+        }
+        layout {
+            sequence: 40
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            valuePlaceholder: "e.g., Intro acoustic only, build on chorus 2"
+        }
+        validation {
+            maxLength: 500
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: Cancel
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: CLOSE
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button add-song (
+        buttonName: ADD
+        label: "Add to Setlist"
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            icon: fa-plus
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction cancel-dialog (
+        name: "Cancel Dialog"
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+    )
+
+    process add_setlist_song (
+        name: "Add Song to Setlist"
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                BEGIN
+                    ws_pkg_service_mgmt.add_setlist_song(
+                        p_service_id  => TO_NUMBER(:P32_SERVICE_ID),
+                        p_song_id     => TO_NUMBER(:P32_SONG_ID),
+                        p_service_key => :P32_SERVICE_KEY,
+                        p_notes       => :P32_NOTES
+                    );
+                END;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: "Song added to service setlist!"
+        }
+        serverSideCondition {
+            whenButtonPressed: @add-song
+        }
+    )
+
+    process close_dialog (
+        name: "Close Dialog"
+        type: closeDialog
+        execution {
+            sequence: 20
+        }
+    )
+
+)

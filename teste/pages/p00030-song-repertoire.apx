@@ -1,0 +1,174 @@
+page 30 (
+    name: "Song Repertoire"
+    alias: SONG-REPERTOIRE
+    title: "Song Repertoire"
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: "Song Repertoire"
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: REGION_POSITION_01
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    button add-song (
+        buttonName: ADD_SONG
+        label: "Add New Song"
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            icon: fa-plus
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 31
+            }
+        }
+    )
+
+    region songs-catalog (
+        name: "Repertoire Catalog"
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT 
+                    s.id AS song_id,
+                    s.title AS song_title,
+                    COALESCE(s.artist, 'Traditional') AS song_artist,
+                    s.default_key,
+                    s.bpm,
+                    s.youtube_url,
+                    CASE 
+                        WHEN s.youtube_url IS NOT NULL THEN 'fa-youtube-play'
+                        ELSE 'fa-music'
+                    END AS song_icon,
+                    'Key: <strong>' || s.default_key || '</strong> | ' || NVL(TO_CHAR(s.bpm), '--') || ' BPM' AS song_details
+                FROM ws_songs s
+                WHERE s.is_active = 'Y'
+                ORDER BY s.title ASC
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: #DEFAULT#
+        }
+        card {
+            primaryKeyColumn1: SONG_ID
+        }
+        title {
+            advancedFormatting: false
+            column: SONG_TITLE
+        }
+        subtitle {
+            advancedFormatting: false
+            column: SONG_ARTIST
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression: "&SONG_DETAILS!HTML."
+        }
+        iconAndBadge {
+            iconSource: iconClassColumn
+            iconColumn: SONG_ICON
+            iconPosition: start
+            badgeColumn: DEFAULT_KEY
+            badgeCssClasses: [
+                u-info
+            ]
+        }
+        messages {
+            whenNoDataFound: "No songs in repertoire yet. Click 'Add New Song' to populate."
+        }
+        componentAppearance {
+            layout: grid
+            gridColumns: 3
+        }
+
+        action add-to-setlist (
+            type: button
+            label: "Add to Setlist"
+            layout {
+                sequence: 10
+                position: primary
+            }
+            appearance {
+                displayType: textWithIcon
+                icon: fa-plus-circle
+                hot: true
+            }
+            behavior {
+                type: redirectThisApp
+                target: {
+                    page: 32
+                    items: {
+                        P32_SONG_ID: &SONG_ID.
+                        P32_SERVICE_KEY: &DEFAULT_KEY.
+                    }
+                }
+            }
+        )
+
+        action edit-song (
+            type: button
+            label: Edit
+            layout {
+                sequence: 20
+                position: secondary
+            }
+            appearance {
+                displayType: textWithIcon
+                icon: fa-edit
+            }
+            behavior {
+                type: redirectThisApp
+                target: {
+                    page: 31
+                    items: {
+                        P31_SONG_ID: &SONG_ID.
+                        P31_TITLE: &SONG_TITLE.
+                        P31_ARTIST: &SONG_ARTIST.
+                        P31_DEFAULT_KEY: &DEFAULT_KEY.
+                    }
+                }
+            }
+        )
+    )
+
+)

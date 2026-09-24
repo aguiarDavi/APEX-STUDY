@@ -6,6 +6,36 @@ This document records the architectural history, modifications made, challenges 
 
 ## 1. Activity Log
 
+### [2026-09-24] - Sprint 4: Song Repertoire & Setlists Complete
+
+#### Added
+- **Song Repertoire Catalog Page ([`teste/pages/p00030-song-repertoire.apx`](file:///home/davi/Dev/apex-gemini/teste/pages/p00030-song-repertoire.apx))**:
+  - Built interactive card catalog displaying song repertoire with search filter.
+  - Cards feature Song Title, Artist subtitle, Default Musical Key badge, and Tempo BPM indicator.
+  - Card secondary action buttons: "Add to Setlist" (redirects to Setlist modal) and "Edit Song" (opens edit modal).
+  - Header actions: "Add Song" (opens modal to insert new repertoire songs) and "Leader Matrix" quick link.
+- **Add / Edit Song Modal ([`teste/pages/p00031-song-modal.apx`](file:///home/davi/Dev/apex-gemini/teste/pages/p00031-song-modal.apx))**:
+  - Modal dialog with items for Song Title, Artist, Default Musical Key (select list with musical keys A, Bb, B, C, C#, D, Eb, E, F, F#, G, Ab), Tempo (BPM), and YouTube Rehearsal URL.
+  - Automatic pre-population when editing existing songs via `P31_SONG_ID`.
+  - Server-side validation ensuring title, artist, and default key are mandatory.
+  - Atomic DML execution inserting or updating `WS_SONGS`.
+- **Add Song to Service Setlist Modal ([`teste/pages/p00032-setlist-modal.apx`](file:///home/davi/Dev/apex-gemini/teste/pages/p00032-setlist-modal.apx))**:
+  - Modal dialog selecting active Service and Song.
+  - Transposition musical key selector defaulting to the song's default key.
+  - Arrangement and rehearsal notes text field.
+  - Server-side process invoking `ws_pkg_service_mgmt.add_setlist_song`.
+- **Leader Matrix Setlist Integration ([`teste/pages/p00020-leader-matrix.apx`](file:///home/davi/Dev/apex-gemini/teste/pages/p00020-leader-matrix.apx))**:
+  - Embedded "Service Setlist (Repertoire & Order)" cards region directly below band roster cards.
+  - Displays play order sequence, song title, artist, service transposition key badge, and arrangement notes.
+  - Features YouTube rehearsal link button opening video in new tab.
+  - Region header includes "+ Add Song to Setlist" button redirecting to Page 32.
+- **Shared Components Integration ([`teste/shared-components/`](file:///home/davi/Dev/apex-gemini/teste/shared-components/))**:
+  - Wired Song Repertoire into Navigation Menu (`lists.apx`) with music icon (`fa-music`).
+  - Added Breadcrumb trails (`breadcrumbs.apx`) for Page 30, 31, and 32.
+- **Comprehensive Playwright E2E Test Suite ([`tests/e2e/sprint4-song-repertoire.e2e.mjs`](file:///home/davi/Dev/apex-gemini/tests/e2e/sprint4-song-repertoire.e2e.mjs))**:
+  - Automated 6 test scenarios: song catalog rendering, adding new song ("Way Maker"), verifying repertoire update, setlist modal with transposition key, setlist appearance on Leader Matrix, and zero console error assertion.
+  - 100% test pass rate achieved against live Oracle APEX 26.1 and Oracle Database 23ai.
+
 ### [2026-09-24] - Sprint 3: Leader Scheduling Matrix & Management Complete
 
 #### Added
@@ -196,6 +226,12 @@ This document records the architectural history, modifications made, challenges 
   Cards region query referencing `c.musician_name` on `ws_v_roster_conflicts` failed with `ORA-00904: "C"."MUSICIAN_NAME": invalid identifier` because the underlying view defines the volunteer's name as `MEMBER_NAME`.
 * **The Resolution**:
   Consulted compiler truth via SQLcl (`DESC ws_v_roster_conflicts`) and aliased `c.member_name AS musician_name` and joined `ws_service_roster` to acquire the target `instrument_id`.
+
+### 13. Aligning Schema Column Definitions in APEX Queries
+* **The Problem**:
+  `WS_SONGS` column for tempo is `BPM` (not `TEMPO_BPM`), and the table does not have a `TIME_SIGNATURE` column. Initial query attempts threw `ORA-00904: invalid identifier`.
+* **The Resolution**:
+  Inspected exact table definition in `spec/schema.md` and verified column existence against `ALL_TAB_COLUMNS`. Updated all page queries and DML processes to reference `BPM` exclusively.
 
 ---
 

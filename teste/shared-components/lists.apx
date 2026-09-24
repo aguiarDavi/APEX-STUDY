@@ -127,6 +127,22 @@ list navigation-menu (
         }
     )
 
+    entry song-repertoire (
+        label: "Song Repertoire"
+        icon {
+            imageIconCssClasses: fa-book
+        }
+        layout {
+            sequence: 40
+        }
+        link {
+            target: {
+                page: 30
+            }
+        }
+    )
+
 )
+
 
 

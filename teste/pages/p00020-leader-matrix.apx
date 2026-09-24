@@ -160,6 +160,30 @@ page 20 (
         }
     )
 
+    button add-setlist-song (
+        buttonName: ADD_SETLIST_SONG
+        label: "Add Song to Setlist"
+        layout {
+            sequence: 40
+            region: @toolbar
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            icon: fa-music
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 32
+                items: {
+                    P32_SERVICE_ID: &P20_SERVICE_ID.
+                }
+            }
+        }
+    )
+
     region roster-conflicts (
         name: "Scheduling Conflicts (Retroactive Blockouts)"
         type: cards
@@ -359,6 +383,77 @@ page 20 (
                 }
             }
         )
+    )
+
+    region service-setlist (
+        name: "Service Setlist (Repertoire & Arrangement)"
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT 
+                    ssl.id AS setlist_id,
+                    ssl.service_id,
+                    ssl.play_order,
+                    '#' || ssl.play_order || '. ' || s.title AS song_title_order,
+                    s.title AS song_title,
+                    s.artist AS song_artist,
+                    ssl.service_key,
+                    s.default_key,
+                    'Key: <strong>' || ssl.service_key || '</strong> (Orig: ' || s.default_key || ')' AS key_transposition,
+                    ssl.notes AS setlist_notes,
+                    s.youtube_url,
+                    CASE 
+                        WHEN s.youtube_url IS NOT NULL THEN 'fa-youtube-play'
+                        ELSE 'fa-music'
+                    END AS song_icon
+                FROM ws_service_setlist ssl
+                JOIN ws_songs s ON s.id = ssl.song_id
+                WHERE ssl.service_id = TO_NUMBER(:P20_SERVICE_ID)
+                ORDER BY ssl.play_order ASC
+                ```
+        }
+        layout {
+            sequence: 50
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: #DEFAULT#
+        }
+        card {
+            primaryKeyColumn1: SETLIST_ID
+        }
+        title {
+            advancedFormatting: false
+            column: SONG_TITLE_ORDER
+        }
+        subtitle {
+            advancedFormatting: false
+            column: SONG_ARTIST
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression: "&KEY_TRANSPOSITION!HTML.<br>Notes: &SETLIST_NOTES!HTML."
+        }
+        iconAndBadge {
+            iconSource: iconClassColumn
+            iconColumn: SONG_ICON
+            iconPosition: start
+            badgeColumn: SERVICE_KEY
+            badgeCssClasses: [
+                u-warning
+            ]
+        }
+        messages {
+            whenNoDataFound: "No songs added to this service setlist yet. Click 'Add Song to Setlist' above."
+        }
+        componentAppearance {
+            layout: grid
+            gridColumns: 3
+        }
     )
 
     process process_auto_fill (

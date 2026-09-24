@@ -1,0 +1,286 @@
+page 31 (
+    name: "Song Details"
+    alias: SONG-MODAL
+    title: "Song Details"
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+    dialog {
+        chained: false
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region form (
+        name: "Song Information"
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: REGION_POSITION_03
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P31_SONG_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @form
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P31_TITLE (
+        type: textField
+        label {
+            label: "Song Title"
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            valueRequired: true
+            maxLength: 150
+        }
+    )
+
+    pageItem P31_ARTIST (
+        type: textField
+        label {
+            label: Artist
+            alignment: left
+        }
+        layout {
+            sequence: 30
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            maxLength: 150
+        }
+    )
+
+    pageItem P31_DEFAULT_KEY (
+        type: selectList
+        label {
+            label: "Default Key"
+            alignment: left
+        }
+        layout {
+            sequence: 40
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT column_value AS d, column_value AS r 
+                FROM TABLE(sys.odcivarchar2list('C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#','Bb','B'))
+                ```
+            displayNullValue: false
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+
+    pageItem P31_BPM (
+        type: numberField
+        label {
+            label: "Tempo (BPM)"
+            alignment: left
+        }
+        layout {
+            sequence: 50
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P31_YOUTUBE_URL (
+        type: textField
+        label {
+            label: "YouTube Video URL"
+            alignment: left
+        }
+        layout {
+            sequence: 70
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            maxLength: 500
+        }
+        help {
+            helpText: "Paste a YouTube link so musicians can rehearse with the exact arrangement."
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: Cancel
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: CLOSE
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: "Save Song"
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            icon: fa-save
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction cancel-dialog (
+        name: "Cancel Dialog"
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+    )
+
+    process save_song (
+        name: "Save Song"
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                BEGIN
+                    IF :P31_SONG_ID IS NULL THEN
+                        INSERT INTO ws_songs (
+                            title,
+                            artist,
+                            default_key,
+                            bpm,
+                            youtube_url,
+                            is_active
+                        ) VALUES (
+                            :P31_TITLE,
+                            :P31_ARTIST,
+                            :P31_DEFAULT_KEY,
+                            TO_NUMBER(:P31_BPM),
+                            :P31_YOUTUBE_URL,
+                            'Y'
+                        );
+                    ELSE
+                        UPDATE ws_songs
+                           SET title       = :P31_TITLE,
+                               artist      = :P31_ARTIST,
+                               default_key = :P31_DEFAULT_KEY,
+                               bpm         = TO_NUMBER(:P31_BPM),
+                               youtube_url = :P31_YOUTUBE_URL
+                         WHERE id = TO_NUMBER(:P31_SONG_ID);
+                    END IF;
+                END;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: "Song successfully saved to repertoire!"
+        }
+        serverSideCondition {
+            whenButtonPressed: @save
+        }
+    )
+
+    process close_dialog (
+        name: "Close Dialog"
+        type: closeDialog
+        execution {
+            sequence: 20
+        }
+    )
+
+)
