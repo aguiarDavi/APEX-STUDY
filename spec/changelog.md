@@ -26,6 +26,7 @@ This document records the architectural history, modifications made, challenges 
   - Enforced mandatory changelog logging for every development iteration.
   - Mandated comprehensive Playwright E2E testing in `tests/` (`tests/e2e/`) for every UI feature.
   - Enforced project workspace boundaries: `teste/` for APEX application and `tests/` for all test suites.
+  - Added Rule 9: Mandatory Git commit and push to `origin/main` after every iteration.
 
 ### [2026-09-24] - Architecture, Specification & Sprint Planning
 

@@ -1,6 +1,6 @@
 # Agent Operating Manual & Skill Routing Guide (AGENTS.md)
 
-This document is the **primary contract for AI agents** working on the WorshipFlow codebase. **Every iteration must consult this file** to determine which specialized skill to activate and which specification documents in `spec/` to read before generating code or executing tasks.
+This document is the **primary contract for AI agents** working on the WorshipFlow codebase. **Every iteration must consult this file** to determine which specialized skill to activate, which specification documents in `spec/` to read, and how to conclude the iteration before completing the turn.
 
 ---
 
@@ -13,20 +13,23 @@ flowchart TD
     Start([New Iteration / Task]) --> Step1[1. Check Current Sprint in spec/plan.md]
     Step1 --> Step2[2. Consult Relevant spec/ Specifications]
     Step2 --> Step3[3. Route to Domain Skill: db, apexlang, or apx-testkit]
-    Step3 --> Step4[4. Execute & Verify: DDL, APEXlang, or Playwright Tests]
-    Step4 --> Step5[5. Update spec/changelog.md: Log actions, challenges & discoveries]
-    Step5 --> End([Turn Complete])
+    Step3 --> Step4[4. Develop in teste/ & Test in tests/]
+    Step4 --> Step5[5. Create E2E Tests in tests/e2e/ & Verify]
+    Step5 --> Step6[6. Log in spec/changelog.md: Actions, Challenges, Discoveries]
+    Step6 --> Step7[7. Mandatory Git Commit & Push to Remote origin/main]
+    Step7 --> End([Turn Complete])
 ```
 
-1. **Locate Objective**: Read [`spec/plan.md`](file:///home/davi/Dev/apex-gemini/spec/plan.md) to understand current sprint goals and exit criteria.
+1. **Locate Objective**: Read [`spec/plan.md`](file:///home/davi/Dev/apex-gemini/spec/plan.md) to understand current sprint goals, deliverables, and exit criteria.
 2. **Consult Authority**: Read authoritative domain models in [`spec/schema.md`](file:///home/davi/Dev/apex-gemini/spec/schema.md), [`spec/spec.md`](file:///home/davi/Dev/apex-gemini/spec/spec.md), and [`spec/patterns.md`](file:///home/davi/Dev/apex-gemini/spec/patterns.md). Never infer schema, table names, or constraints from prompts alone.
 3. **Route Skill**: Activate the exact skill needed for the task (see Routing Matrix in Section 2).
-4. **Implement with Mandatory Prefixes**: Enforce the project **`WS_`** prefix on all database objects and PL/SQL units.
+4. **Implement with Mandatory Prefixes**: Enforce the project **`WS_`** prefix on all database objects, PL/SQL packages, procedures, functions, triggers, sequences, constraints, and indexes.
 5. **Develop in `teste/` & Test in `tests/`**:
-   - Build all APEX application features, `.apx` pages, and shared components strictly inside **`teste/`**.
-   - Create and run all Playwright E2E tests, typed page objects, and test specs strictly inside **`tests/`** (`tests/e2e/`).
-6. **Create E2E Tests for Every Feature**: Every new UI screen, modal, drawer, or interactive user flow created or changed must be accompanied by comprehensive Playwright end-to-end tests in `tests/e2e/`.
-7. **Mandatory Changelog Logging**: In **every single iteration**, log all actions completed, technical challenges solved, and domain discoveries directly into [`spec/changelog.md`](file:///home/davi/Dev/apex-gemini/spec/changelog.md). Never complete an iteration without updating the changelog.
+   - **Application Directory**: Build all APEX application features, `.apx` pages, and shared components strictly inside **`teste/`**.
+   - **Testing Directory**: Create and run all Playwright E2E tests, typed page objects, and test specs strictly inside **`tests/`** (`tests/e2e/`).
+6. **Create E2E Tests for Every Feature**: Every new UI screen, modal, drawer, or interactive user flow created or modified must be accompanied by automated Playwright E2E tests verifying happy paths and edge cases.
+7. **Mandatory Changelog Logging**: In **every single iteration**, log all completed tasks, technical challenges solved, and domain discoveries directly into [`spec/changelog.md`](file:///home/davi/Dev/apex-gemini/spec/changelog.md). Never complete an iteration without updating the changelog.
+8. **Mandatory Git Commit & Push**: At the conclusion of **every iteration**, all modified and created files must be staged, committed with a descriptive message, and pushed to the remote repository (`git push origin main`). Leaving uncommitted or unpushed changes at the end of a turn is strictly forbidden.
 
 ---
 
@@ -34,8 +37,8 @@ flowchart TD
 
 | Specialized Skill | When to Use | Key Tools & References | Forbidden / Out of Scope |
 | :--- | :--- | :--- | :--- |
-| **`db`**<br>*(Oracle Database)* | • Writing, modifying, or reviewing DDL tables, constraints, sequences, triggers, and indexes.<br>• Implementing PL/SQL packages (`WS_PKG_SCHEDULER`, `WS_PKG_SERVICE_MGMT`, `WS_PKG_MUSICIAN_PORTAL`).<br>• Writing complex SQL queries, analytical views (`WS_V_ROSTER_CONFLICTS`), or batch algorithms.<br>• Performance tuning, explain plans, row locking (`FOR UPDATE`), and concurrency control.<br>• SQLcl execution, seed data population, and schema migration scripts. | • `spec/schema.md`<br>• `spec/patterns.md`<br>• MCP: `oracle-sqlcl` (`sql_run`, `sqlcl_run`) | • Do not use for APEX UI page authoring or client-side JavaScript. |
-| **`apex` / `apexlang`**<br>*(Oracle APEX & APEXlang)* | • Generating or editing declarative APEXlang (`.apx`) components in `teste/` (or target app).<br>• Creating APEX pages (`p00001-home.apx`, modals, drawers, cards, interactive reports/grids).<br>• Configuring Shared Components (LOVs, navigation lists, breadcrumbs, authorizations, themes).<br>• Applying Universal Theme (Theme 42) template options, CSS utility classes, and custom tokens.<br>• Validating `.apx` syntax using `apexctl.mjs`. | • `teste/`<br>• `spec/patterns.md`<br>• `node tools/apexctl.mjs`<br>• `CUSTOMIZING_UNIVERSAL_THEME_LOWCODE_AND_APEXLANG.md` | • Do not write multi-table business DML directly in page processes; invoke PL/SQL package APIs instead. |
+| **`db`**<br>*(Oracle Database)* | • Writing, modifying, or reviewing DDL tables, constraints, sequences, triggers, and indexes.<br>• Implementing PL/SQL packages (`WS_PKG_SCHEDULER`, `WS_PKG_SERVICE_MGMT`, `WS_PKG_MUSICIAN_PORTAL`).<br>• Writing complex SQL queries, analytical views (`WS_V_ROSTER_CONFLICTS`), or batch algorithms.<br>• Performance tuning, explain plans, row locking (`FOR UPDATE`), and concurrency control.<br>• SQLcl execution, seed data population, and schema migration scripts. | • `spec/schema.md`<br>• `spec/patterns.md`<br>• MCP: `oracle-sqlcl` (`sql_run`, `sqlcl_run`, `schema_information`) | • Do not use for APEX UI page authoring or client-side JavaScript. |
+| **`apex` / `apexlang`**<br>*(Oracle APEX & APEXlang)* | • Generating or editing declarative APEXlang (`.apx`) components in `teste/`.<br>• Creating APEX pages (`p00001-home.apx`, modals, drawers, cards, interactive reports/grids).<br>• Configuring Shared Components (LOVs, navigation lists, breadcrumbs, authorizations, themes).<br>• Applying Universal Theme (Theme 42) template options, CSS utility classes, and custom tokens.<br>• Validating `.apx` syntax using `apexctl.mjs`. | • `teste/`<br>• `spec/patterns.md`<br>• `node tools/apexctl.mjs`<br>• `CUSTOMIZING_UNIVERSAL_THEME_LOWCODE_AND_APEXLANG.md` | • Do not write multi-table business DML directly in page processes; invoke PL/SQL package APIs instead. |
 | **`apx-testkit`**<br>*(Playwright E2E Testing)* | • Synthesizing typed Page Object Models (POM) from `.apx` files.<br>• Writing and running deterministic Playwright end-to-end tests in `tests/e2e/`.<br>• Verifying user flows: musician 1-click invitation responses, blockout registration, leader matrix scheduling.<br>• Testing Universal Theme UI elements (dark/light toggle, cards, drawer dialogs, buttons).<br>• Analyzing test coverage and generating flow maps. | • `tests/e2e/`<br>• `@apx/testkit`<br>• `@apx/generator` | • Do not use for testing raw PL/SQL logic independently of the APEX UI (use SQLcl scripts for database unit tests). |
 | **`oracle-sqlcl`**<br>*(MCP Server)* | • Live database inspection: querying `USER_TABLES`, `USER_CONSTRAINTS`, `USER_ERRORS`.<br>• Running DDL migration files (`01_tables_and_indexes.sql`, `02_seed_data.sql`).<br>• Testing packaged procedures directly via anonymous PL/SQL blocks. | • MCP tools: `sql_run`, `sqlcl_run`, `schema_information` | • Never run destructive DDL/DML (`DROP TABLE`, `TRUNCATE`) without explicit confirmation. |
 | **`generative_ui`**<br>*(Visual UI Artifacts)* | • Presenting interactive charts, workflow diagrams, or clickable prototypes directly in the chat.<br>• Illustrating UI proposals before committing them to `.apx` files. | • Standalone HTML/CSS/JS artifacts | • Artifacts are for human feedback and do not substitute for actual `.apx` application code. |
@@ -114,6 +117,7 @@ spec/
 3. **Offline Context over Guessing**: Never hallucinate database column names or APEX component properties. Query compiler truth or inspect `spec/schema.md`.
 4. **Autonomous Transactions**: `PRAGMA AUTONOMOUS_TRANSACTION` is strictly reserved for error/audit logging.
 5. **Security First**: Always bind `:APP_USER` and check authorization schemes (`WS_AUTH_LEADER`, `WS_AUTH_MUSICIAN`). Never concatenate variables into dynamic SQL.
-6. **Project Application Workspace**: All APEX application definitions, `.apx` pages, shared components, static files, and theme customizations must be created and edited inside **`teste/`**.
-7. **Comprehensive E2E Testing**: All testing occurs inside **`tests/`** (specifically `tests/e2e/`). Every new UI page, interactive region, drawer, modal, or form must include deterministic Playwright E2E tests verifying happy-path and edge-case behavior.
-8. **Mandatory Iteration Logging**: Every single iteration must log its activities, challenges faced and solved, and domain discoveries in [`spec/changelog.md`](file:///home/davi/Dev/apex-gemini/spec/changelog.md). Leaving an iteration without recording progress is strictly prohibited.
+6. **Project Application Workspace (`teste/`)**: All APEX application definitions, `.apx` pages, shared components, static files, and theme customizations must be created and edited inside **`teste/`**.
+7. **Comprehensive E2E Testing (`tests/`)**: All testing occurs inside **`tests/`** (specifically `tests/e2e/`). Every new UI page, interactive region, drawer, modal, or form must include deterministic Playwright E2E tests verifying happy-path and edge-case behavior.
+8. **Mandatory Changelog Logging**: In **every single iteration**, log all actions completed, technical challenges solved, and domain discoveries directly into [`spec/changelog.md`](file:///home/davi/Dev/apex-gemini/spec/changelog.md). Leaving an iteration without recording progress is strictly prohibited.
+9. **Mandatory Commit & Push After Every Iteration**: At the conclusion of **every single iteration**, all changes MUST be staged, committed with a descriptive message, and pushed to the remote repository (`git push origin main`). Leaving uncommitted or unpushed work at the end of a turn is strictly forbidden.
