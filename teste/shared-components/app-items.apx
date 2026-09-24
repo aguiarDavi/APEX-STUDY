@@ -1,0 +1,6 @@
+appItem APP_THEME_MODE (
+    security {
+        sessionStateProtection: unrestricted
+        escapeSpecialChars: true
+    }
+)

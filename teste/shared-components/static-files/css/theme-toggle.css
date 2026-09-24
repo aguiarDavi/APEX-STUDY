@@ -1,0 +1,26 @@
+/* Anti-flicker CSS for Theme Toggle in Navigation Bar */
+
+/* 1. Never show text label in navbar */
+.js-theme-toggle .t-Button-label {
+    display: none !important;
+}
+
+/* 2. Default (Light mode): Display Moon icon */
+.js-theme-toggle .t-Icon::before {
+    content: "\f186" !important; /* fa-moon-o */
+}
+
+/* 3. Dark mode: Display Sun icon automatically via CSS when Dark Theme is active */
+.apex-theme-vita-dark .js-theme-toggle .t-Icon::before,
+html.dark-mode .js-theme-toggle .t-Icon::before,
+body.t-PageBody--dark .js-theme-toggle .t-Icon::before {
+    content: "\f185" !important; /* fa-sun-o */
+}
+
+/* 4. Smooth transition on the icon button */
+.js-theme-toggle a {
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.js-theme-toggle a:hover {
+    transform: scale(1.1);
+}

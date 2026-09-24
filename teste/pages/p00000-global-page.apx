@@ -1,4 +1,109 @@
 page 0 (
     name: Global Page
+
+    dynamicAction da-theme-toggle (
+        name: "Toggle Light/Dark Theme"
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: jQuerySelector
+            jquerySelector: ".js-theme-toggle a"
+        }
+        action instant-swap (
+            action: executeJsCode
+            settings {
+                jsCode:
+                    ```javascript
+                    var themeLink = document.querySelector('link[href*="Iris.min.css"], link[href*="Vita-Dark.min.css"]');
+                    var isDark = $('body').hasClass('apex-theme-vita-dark') || (themeLink && themeLink.href.indexOf('Vita-Dark') !== -1);
+                    var targetMode = isDark ? 'light' : 'dark';
+
+                    var inp = document.getElementById('APP_THEME_MODE');
+                    if (!inp) {
+                        inp = document.createElement('input');
+                        inp.type = 'hidden';
+                        inp.id = 'APP_THEME_MODE';
+                        inp.name = 'APP_THEME_MODE';
+                        document.body.appendChild(inp);
+                    }
+                    inp.value = targetMode;
+                    if (apex.item('APP_THEME_MODE')) {
+                        apex.item('APP_THEME_MODE').setValue(targetMode);
+                    }
+
+                    if (isDark) {
+                        if (themeLink) themeLink.href = themeLink.href.replace('Vita-Dark.min.css', 'Iris.min.css');
+                        $('body').removeClass('apex-theme-vita-dark').addClass('apex-theme-iris');
+                        $('html').removeClass('dark-mode');
+                        $('.js-theme-toggle a').attr('title', 'Alternar para Modo Escuro');
+                        localStorage.setItem('apex_theme_mode', 'light');
+                    } else {
+                        if (themeLink) themeLink.href = themeLink.href.replace('Iris.min.css', 'Vita-Dark.min.css');
+                        $('body').removeClass('apex-theme-iris').addClass('apex-theme-vita-dark');
+                        $('html').addClass('dark-mode');
+                        $('.js-theme-toggle a').attr('title', 'Alternar para Modo Claro');
+                        localStorage.setItem('apex_theme_mode', 'dark');
+                    }
+                    ```
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+        action persist-style (
+            action: executeServerSideCode
+            settings {
+                itemsToSubmit: "APP_THEME_MODE"
+                plsqlCode:
+                    ```plsql
+                    declare
+                        l_dark_id number;
+                        l_light_id number;
+                        l_target_id number;
+                    begin
+                        select theme_style_id into l_dark_id
+                          from apex_application_theme_styles
+                         where application_id = :APP_ID
+                           and theme_number = 42
+                           and name = 'Vita - Dark';
+
+                        select theme_style_id into l_light_id
+                          from apex_application_theme_styles
+                         where application_id = :APP_ID
+                           and theme_number = 42
+                           and (is_current = 'Yes' or name in ('Iris', 'Vita'))
+                           and rownum = 1;
+
+                        if :APP_THEME_MODE = 'dark' then
+                            l_target_id := l_dark_id;
+                        else
+                            l_target_id := l_light_id;
+                        end if;
+
+                        if :APP_USER is not null and :APP_USER != 'nobody' then
+                            apex_theme.set_user_style(
+                                p_application_id => :APP_ID,
+                                p_user           => :APP_USER,
+                                p_theme_number   => 42,
+                                p_id             => l_target_id
+                            );
+                        end if;
+
+                        apex_theme.set_session_style(
+                            p_theme_number => 42,
+                            p_id           => l_target_id
+                        );
+                    end;
+                    ```
+            }
+            execution {
+                sequence: 20
+                fireOnInit: false
+            }
+        )
+    )
 )
 

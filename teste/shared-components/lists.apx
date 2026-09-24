@@ -1,6 +1,26 @@
 list navigation-bar (
     name: Navigation Bar
 
+    entry theme-toggle (
+        label: "Alternar Tema"
+        icon {
+            imageIconCssClasses: fa-moon-o
+        }
+        layout {
+            sequence: 5
+        }
+        link {
+            target: {
+                type: url
+                url: javascript:void(0);
+            }
+        }
+        userDefinedAttributes {
+            2: "t-Button--noLabel js-theme-toggle"
+            4: "Alternar Tema Claro/Escuro"
+        }
+    )
+
     entry app-user (
         label: &APP_USER.
         icon {

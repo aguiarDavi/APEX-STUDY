@@ -33,7 +33,7 @@ prompt APPLICATION 101 - TESTE
 -- Application Export:
 --   Application:     101
 --   Name:            TESTE
---   Date and Time:   01:06 Quinta-Feira Setembro 24, 2026
+--   Date and Time:   02:22 Quinta-Feira Setembro 24, 2026
 --   Exported By:     DAVI
 --   Flashback:       0
 --   Export Type:     Application Export
@@ -42,8 +42,10 @@ prompt APPLICATION 101 - TESTE
 --       Processes:                4
 --       Regions:                  2
 --       Buttons:                  1
+--       Dynamic Actions:          1
 --     Shared Components:
 --       Logic:
+--         Items:                  1
 --         Build Options:          1
 --       Navigation:
 --         Lists:                  2
@@ -105,16 +107,15 @@ wwv_imp_workspace.create_flow(
 ,p_substitution_string_01=>'APP_NAME'
 ,p_substitution_value_01=>'TESTE'
 ,p_file_prefix=>nvl(wwv_flow_application_install.get_static_app_file_prefix,'')
-,p_files_version=>2461308010107
-,p_version_scn=>'3221894'
+,p_files_version=>2461308021930
 ,p_print_server_type=>'NATIVE'
 ,p_file_storage=>'DB'
 ,p_is_pwa=>'Y'
 ,p_pwa_is_installable=>'N'
 ,p_pwa_is_push_enabled=>'N'
 ,p_theme_id=>42
-,p_home_url=>'f?p=&APP_ID.:1:&APP_SESSION.::&DEBUG.:::'
-,p_login_url=>'f?p=&APP_ID.:LOGIN:&APP_SESSION.::&DEBUG.:::'
+,p_home_url=>'f?p=&APP_ID.:1:&SESSION.::&DEBUG.'
+,p_login_url=>'f?p=&APP_ID.:LOGIN:&SESSION.::&DEBUG.'
 ,p_theme_style_by_user_pref=>false
 ,p_built_with_love=>false
 ,p_global_page_id=>0
@@ -135,7 +136,6 @@ wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5989753391991220)
 ,p_plugin_type=>'DYNAMIC ACTION'
 ,p_plugin=>'NATIVE_OPEN_AI_ASSISTANT'
-,p_version_scn=>'SH256:NcagEyRP_F17oe14bnrSYSYienkBgpdRSvH17g_NxoE'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5990046150991234)
@@ -144,7 +144,6 @@ wwv_flow_imp_shared.create_plugin_setting(
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'display_as', 'POPUP',
   'mode', 'FULL')).to_clob
-,p_version_scn=>'SH256:FJR60MFzlfEjx0PvnpYBK4631rNeUHXaF3eGFKxcTgE'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5990305139991235)
@@ -155,7 +154,6 @@ wwv_flow_imp_shared.create_plugin_setting(
   'days_outside_month', 'VISIBLE',
   'show_on', 'FOCUS',
   'time_increment', '15')).to_clob
-,p_version_scn=>'SH256:dQTHqehcDG0h-d-qmHe5lf-DuViElEHDw9zMkscLr6M'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5990689400991235)
@@ -166,7 +164,6 @@ wwv_flow_imp_shared.create_plugin_setting(
   'display_as', 'LIST',
   'map_preview', 'POPUP:ITEM',
   'match_mode', 'RELAX_HOUSE_NUMBER')).to_clob
-,p_version_scn=>'SH256:CU9J9l4sUtY-UffjdBCosfDW6ER-I0swXpw8GekLiYQ'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5990938693991235)
@@ -174,7 +171,6 @@ wwv_flow_imp_shared.create_plugin_setting(
 ,p_plugin=>'NATIVE_SELECT_MANY'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'display_values_as', 'separated')).to_clob
-,p_version_scn=>'SH256:jJTPfH8wphTXe7ahDytF6PbWlPl1mXrDRYylCDda0k0'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5991214020991236)
@@ -183,7 +179,6 @@ wwv_flow_imp_shared.create_plugin_setting(
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'checked_value', 'Y',
   'unchecked_value', 'N')).to_clob
-,p_version_scn=>'SH256:oAqKgc-cSRXHDMjfwwNIgo78WqYXKjQz8MWGBG6Euj0'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5991543717991236)
@@ -192,7 +187,6 @@ wwv_flow_imp_shared.create_plugin_setting(
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'default_icon', 'fa-star',
   'tooltip', '#VALUE#')).to_clob
-,p_version_scn=>'SH256:uT4QhQbZQY61UFxAGl7ieo2urrCo8jUsFNprrg7lGHo'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5991880252991236)
@@ -202,7 +196,6 @@ wwv_flow_imp_shared.create_plugin_setting(
   'display_style', 'SWITCH_CB',
   'off_value', 'N',
   'on_value', 'Y')).to_clob
-,p_version_scn=>'SH256:wAjuCAsVhoIbbuKGWTMQ__Rd_YS_sY9KgWhpqOO11mc'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5992141069991236)
@@ -210,7 +203,6 @@ wwv_flow_imp_shared.create_plugin_setting(
 ,p_plugin=>'NATIVE_GEOCODING'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'match_mode', 'RELAX_HOUSE_NUMBER')).to_clob
-,p_version_scn=>'SH256:GIeRbUJQ8yKfen6-dFvkghmSUZXFoUAXCCTNRhCJgh0'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5992451790991237)
@@ -218,7 +210,6 @@ wwv_flow_imp_shared.create_plugin_setting(
 ,p_plugin=>'NATIVE_DISPLAY_SELECTOR'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'include_slider', 'Y')).to_clob
-,p_version_scn=>'SH256:4M27aN0U-JyQ0prILtI8ITLXOphqUdO-xWNcwkSL1SI'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5992776839991237)
@@ -226,7 +217,6 @@ wwv_flow_imp_shared.create_plugin_setting(
 ,p_plugin=>'NATIVE_IR'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'actions_menu_structure', 'IG')).to_clob
-,p_version_scn=>'SH256:tNGqNT-VaoKqWOwKbAdEqb6C0QO-GMcYRZJLXjScHMo'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5993058037991237)
@@ -234,19 +224,16 @@ wwv_flow_imp_shared.create_plugin_setting(
 ,p_plugin=>'NATIVE_MAP_REGION'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'use_vector_tile_layers', 'Y')).to_clob
-,p_version_scn=>'SH256:vJP7K77hiNj1R2RE6dHVyRAhlmxDg6KGn4yRE20J9Qw'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5993356800991237)
 ,p_plugin_type=>'WEB SOURCE TYPE'
 ,p_plugin=>'NATIVE_ADFBC'
-,p_version_scn=>'SH256:fiSZ-OfcUl-d0e0dtJUYffG7q61xKsHlomsv7ZU1BMw'
 );
 wwv_flow_imp_shared.create_plugin_setting(
  p_id=>wwv_flow_imp.id(5993636260991237)
 ,p_plugin_type=>'WEB SOURCE TYPE'
 ,p_plugin=>'NATIVE_BOSS'
-,p_version_scn=>'SH256:dRkCWi6vQMhdQUSqb0QlRls9iYcsZ93IPYrbTqFqJFE'
 );
 end;
 /
@@ -256,7 +243,6 @@ wwv_flow_imp_shared.create_list(
  p_id=>wwv_flow_imp.id(5995723842991317)
 ,p_name=>'Navigation Bar'
 ,p_static_id=>'navigation-bar'
-,p_version_scn=>'SH256:vnb1-G39r80BPE-5P2Enpuf0sMSVvBeNQDVbFiNwRto'
 );
 wwv_flow_imp_shared.create_list_item(
  p_id=>wwv_flow_imp.id(6008879993991402)
@@ -289,6 +275,17 @@ wwv_flow_imp_shared.create_list_item(
 ,p_parent_list_item_id=>wwv_flow_imp.id(6008879993991402)
 ,p_list_item_current_type=>'TARGET_PAGE'
 );
+wwv_flow_imp_shared.create_list_item(
+ p_id=>wwv_flow_imp.id(6991663625234714)
+,p_list_item_display_sequence=>5
+,p_list_item_link_text=>'Alternar Tema'
+,p_static_id=>'theme-toggle'
+,p_list_item_link_target=>'javascript:void(0);'
+,p_list_item_icon=>'fa-moon-o'
+,p_list_text_02=>'t-Button--noLabel js-theme-toggle'
+,p_list_text_04=>'Alternar Tema Claro/Escuro'
+,p_list_item_current_type=>'TARGET_PAGE'
+);
 end;
 /
 prompt --application/shared_components/navigation/lists/navigation_menu
@@ -297,14 +294,13 @@ wwv_flow_imp_shared.create_list(
  p_id=>wwv_flow_imp.id(5995092046991260)
 ,p_name=>'Navigation Menu'
 ,p_static_id=>'navigation-menu'
-,p_version_scn=>'SH256:cHt1JBAsdhBQ33AnvpfXBU18H-3M3vYQlMNJXIW4-yc'
 );
 wwv_flow_imp_shared.create_list_item(
  p_id=>wwv_flow_imp.id(6006322690991381)
 ,p_list_item_display_sequence=>10
 ,p_list_item_link_text=>'Home'
 ,p_static_id=>'home'
-,p_list_item_link_target=>'f?p=&APP_ID.:1:&APP_SESSION.::&DEBUG.:::'
+,p_list_item_link_target=>'f?p=&APP_ID.:1:&SESSION.::&DEBUG.'
 ,p_list_item_icon=>'fa-home'
 ,p_list_item_current_type=>'TARGET_PAGE'
 );
@@ -313,6 +309,26 @@ end;
 prompt --application/shared_components/navigation/listentry
 begin
 null;
+end;
+/
+prompt --application/shared_components/files/css_theme_toggle_css
+begin
+wwv_flow_imp.g_varchar2_table := wwv_flow_imp.empty_varchar2_table;
+wwv_flow_imp.g_varchar2_table(1) := '2F2A20416E74692D666C69636B65722043535320666F72205468656D6520546F67676C6520696E204E617669676174696F6E20426172202A2F0A0A2F2A20312E204E657665722073686F772074657874206C6162656C20696E206E6176626172202A2F0A';
+wwv_flow_imp.g_varchar2_table(2) := '2E6A732D7468656D652D746F67676C65202E742D427574746F6E2D6C6162656C207B0A20202020646973706C61793A206E6F6E652021696D706F7274616E743B0A7D0A0A2F2A20322E2044656661756C7420284C69676874206D6F6465293A2044697370';
+wwv_flow_imp.g_varchar2_table(3) := '6C6179204D6F6F6E2069636F6E202A2F0A2E6A732D7468656D652D746F67676C65202E742D49636F6E3A3A6265666F7265207B0A20202020636F6E74656E743A20225C66313836222021696D706F7274616E743B202F2A2066612D6D6F6F6E2D6F202A2F';
+wwv_flow_imp.g_varchar2_table(4) := '0A7D0A0A2F2A20332E204461726B206D6F64653A20446973706C61792053756E2069636F6E206175746F6D61746963616C6C792076696120435353207768656E204461726B205468656D6520697320616374697665202A2F0A2E617065782D7468656D65';
+wwv_flow_imp.g_varchar2_table(5) := '2D766974612D6461726B202E6A732D7468656D652D746F67676C65202E742D49636F6E3A3A6265666F72652C0A68746D6C2E6461726B2D6D6F6465202E6A732D7468656D652D746F67676C65202E742D49636F6E3A3A6265666F72652C0A626F64792E74';
+wwv_flow_imp.g_varchar2_table(6) := '2D50616765426F64792D2D6461726B202E6A732D7468656D652D746F67676C65202E742D49636F6E3A3A6265666F7265207B0A20202020636F6E74656E743A20225C66313835222021696D706F7274616E743B202F2A2066612D73756E2D6F202A2F0A7D';
+wwv_flow_imp.g_varchar2_table(7) := '0A0A2F2A20342E20536D6F6F7468207472616E736974696F6E206F6E207468652069636F6E20627574746F6E202A2F0A2E6A732D7468656D652D746F67676C652061207B0A202020207472616E736974696F6E3A206F70616369747920302E3135732065';
+wwv_flow_imp.g_varchar2_table(8) := '6173652C207472616E73666F726D20302E31357320656173653B0A7D0A2E6A732D7468656D652D746F67676C6520613A686F766572207B0A202020207472616E73666F726D3A207363616C6528312E31293B0A7D0A';
+wwv_flow_imp_shared.create_app_static_file(
+ p_id=>wwv_flow_imp.id(6991558424234687)
+,p_file_name=>'css/theme-toggle.css'
+,p_mime_type=>'text/css'
+,p_file_charset=>'utf-8'
+,p_file_content=>wwv_flow_imp.varchar2_to_blob(wwv_flow_imp.g_varchar2_table)
+);
 end;
 /
 prompt --application/shared_components/files/icons_app_icon_144_rounded_png
@@ -903,7 +919,6 @@ wwv_flow_imp_shared.create_security_scheme(
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'plsql_function_body', 'return true;')).to_clob
 ,p_error_message=>'Insufficient privileges, user is not an Administrator'
-,p_version_scn=>'SH256:K94FzTYWdjDQ6WIg6w48Or20nhyD_tWnqCuRh9rK4CU'
 ,p_caching=>'BY_USER_BY_PAGE_VIEW'
 );
 end;
@@ -911,6 +926,15 @@ end;
 prompt --application/shared_components/navigation/navigation_bar
 begin
 null;
+end;
+/
+prompt --application/shared_components/logic/application_items/app_theme_mode
+begin
+wwv_flow_imp_shared.create_flow_item(
+ p_id=>wwv_flow_imp.id(7390037775328127)
+,p_name=>'APP_THEME_MODE'
+,p_protection_level=>'N'
+);
 end;
 /
 prompt --application/shared_components/logic/application_settings
@@ -936,7 +960,6 @@ wwv_flow_imp_shared.create_list_of_values(
 ,p_static_id=>'boolean'
 ,p_lov_query=>'.'||wwv_flow_imp.id(6007811210991396)||'.'
 ,p_location=>'STATIC'
-,p_version_scn=>'SH256:CnCBOq-zabcz-aPWKwU8C5KDeZy6YuyjvpJoTrTywfI'
 );
 wwv_flow_imp_shared.create_static_lov_data(
  p_id=>wwv_flow_imp.id(6008498830991402)
@@ -974,7 +997,7 @@ wwv_flow_imp_shared.create_menu_option(
  p_id=>wwv_flow_imp.id(5994739960991258)
 ,p_short_name=>'Home'
 ,p_static_id=>'home'
-,p_link=>'f?p=&APP_ID.:1:&APP_SESSION.::&DEBUG.:::'
+,p_link=>'f?p=&APP_ID.:1:&SESSION.::&DEBUG.'
 ,p_page_id=>1
 );
 end;
@@ -1024,14 +1047,15 @@ wwv_flow_imp_shared.create_theme(
 ,p_default_required_label=>1610598484065263269
 ,p_default_navbar_list_template=>2849019392706229583
 ,p_file_prefix=>nvl(wwv_flow_application_install.get_static_theme_file_prefix(42),'#APEX_FILES#themes/theme_42/26.1/')
-,p_files_version=>64
+,p_files_version=>2461308021930
 ,p_icon_library=>'FONTAPEX'
 ,p_javascript_file_urls=>wwv_flow_string.join(wwv_flow_t_varchar2(
 '#APEX_FILES#libraries/apex/#MIN_DIRECTORY#widget.stickyWidget#MIN#.js?v=#APEX_VERSION#',
 '#THEME_FILES#js/theme42#MIN#.js?v=#APEX_VERSION#'))
-,p_css_file_urls=>'#THEME_FILES#css/Core#MIN#.css?v=#APEX_VERSION#'
+,p_css_file_urls=>wwv_flow_string.join(wwv_flow_t_varchar2(
+'#THEME_FILES#css/Core#MIN#.css?v=#APEX_VERSION#',
+'#APP_FILES#css/theme-toggle.css'))
 ,p_reference_id=>wwv_imp_util.get_subscription_id(4073840274158169736,2000,'universal-theme',8842.261)
-,p_version_scn=>'SH256:RQZ7_KKNFF7leXIrwskeQw4WaazlZwly2sNGWk8hwQo'
 ,p_version_scn_master=>'SH256:WOPVC8vP1TPWUxczh2dJ4mCZcNGSTzA1cn8DjR2oQjY'
 );
 end;
@@ -1068,7 +1092,6 @@ wwv_flow_imp_shared.create_build_option(
 ,p_build_option_name=>'Commented Out'
 ,p_static_id=>'commented-out'
 ,p_build_option_status=>'EXCLUDE'
-,p_version_scn=>'SH256:1lQI3DW9n-0ZEGoDXUirkaB0JWCIATVWpJZCTCkODmI'
 );
 end;
 /
@@ -1092,7 +1115,6 @@ wwv_flow_imp_shared.create_authentication(
 ,p_invalid_session_type=>'LOGIN'
 ,p_use_secure_cookie_yn=>'N'
 ,p_ras_mode=>0
-,p_version_scn=>'SH256:MwlwV9vQNyvTGV3nRFfTrp5n7mJ1Ugme2lUrlsOYuxw'
 );
 end;
 /
@@ -1110,7 +1132,142 @@ wwv_flow_imp_page.create_page(
 ,p_warn_on_unsaved_changes=>null
 ,p_autocomplete_on_off=>'OFF'
 ,p_protection_level=>'D'
-,p_page_component_map=>'14'
+);
+wwv_flow_imp_page.create_page_da_event(
+ p_id=>wwv_flow_imp.id(6191640683080039)
+,p_name=>'Toggle Light/Dark Theme'
+,p_static_id=>'da-theme-toggle'
+,p_event_sequence=>10
+,p_triggering_element_type=>'JQUERY_SELECTOR'
+,p_triggering_element=>'.js-theme-toggle a'
+,p_bind_type=>'bind'
+,p_execution_type=>'IMMEDIATE'
+,p_bind_event_type=>'click'
+);
+wwv_flow_imp_page.create_page_da_action(
+ p_id=>wwv_flow_imp.id(6991832331234720)
+,p_event_id=>wwv_flow_imp.id(6191640683080039)
+,p_event_result=>'TRUE'
+,p_action_sequence=>10
+,p_execute_on_page_init=>'N'
+,p_static_id=>'instant-swap'
+,p_action=>'NATIVE_JAVASCRIPT_CODE'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'js_code', wwv_flow_string.join(wwv_flow_t_varchar2(
+    '// 1. Locate current theme style link dynamically',
+    'var themeLink = Array.from(document.querySelectorAll(''link[rel="stylesheet"]'')).find(function(l) {',
+    '    return l.href && (l.href.indexOf(''Iris'') !== -1 || l.href.indexOf(''Vita-Dark'') !== -1 || (l.href.indexOf(''theme_42'') !== -1 && l.href.indexOf(''Core'') === -1));',
+    '});',
+    'var isDark = document.body.classList.contains(''apex-theme-vita-dark'') || ',
+    '             document.documentElement.classList.contains(''dark-mode'') ||',
+    '             (themeLink && themeLink.href.indexOf(''Vita-Dark'') !== -1);',
+    'var targetMode = isDark ? ''light'' : ''dark'';',
+    '',
+    '// 2. Ensure hidden input exists for APEX session state submission',
+    'var inp = document.getElementById(''APP_THEME_MODE'');',
+    'if (!inp) {',
+    '    inp = document.createElement(''input'');',
+    '    inp.type = ''hidden'';',
+    '    inp.id = ''APP_THEME_MODE'';',
+    '    inp.name = ''APP_THEME_MODE'';',
+    '    document.body.appendChild(inp);',
+    '}',
+    'inp.value = targetMode;',
+    'if (apex.item(''APP_THEME_MODE'')) {',
+    '    apex.item(''APP_THEME_MODE'').setValue(targetMode);',
+    '}',
+    '',
+    '// 3. Instant In-Place DOM & Stylesheet Swap (Zero Reload, Zero Flicker)',
+    'if (isDark) {',
+    '    if (themeLink) {',
+    '        var basePath = themeLink.href.substring(0, themeLink.href.lastIndexOf(''/'') + 1);',
+    '        themeLink.href = basePath + ''Iris.min.css?v=26.1.0'';',
+    '    }',
+    '    document.body.classList.remove(''apex-theme-vita-dark'', ''apex-theme-vita'');',
+    '    document.body.classList.add(''apex-theme-iris'');',
+    '    document.documentElement.classList.remove(''dark-mode'');',
+    '    var btn = document.querySelector(''.js-theme-toggle a'');',
+    '    if (btn) btn.setAttribute(''title'', ''Alternar para Modo Escuro'');',
+    '    localStorage.setItem(''apex_theme_mode'', ''light'');',
+    '} else {',
+    '    if (themeLink) {',
+    '        var basePath = themeLink.href.substring(0, themeLink.href.lastIndexOf(''/'') + 1);',
+    '        themeLink.href = basePath + ''Vita-Dark.min.css?v=26.1.0'';',
+    '    }',
+    '    document.body.classList.remove(''apex-theme-iris'', ''apex-theme-vita'');',
+    '    document.body.classList.add(''apex-theme-vita-dark'');',
+    '    document.documentElement.classList.add(''dark-mode'');',
+    '    var btn = document.querySelector(''.js-theme-toggle a'');',
+    '    if (btn) btn.setAttribute(''title'', ''Alternar para Modo Claro'');',
+    '    localStorage.setItem(''apex_theme_mode'', ''dark'');',
+    '}')))).to_clob
+);
+wwv_flow_imp_page.create_page_da_action(
+ p_id=>wwv_flow_imp.id(6991947648234721)
+,p_event_id=>wwv_flow_imp.id(6191640683080039)
+,p_event_result=>'TRUE'
+,p_action_sequence=>20
+,p_execute_on_page_init=>'N'
+,p_static_id=>'persist-style'
+,p_action=>'NATIVE_EXECUTE_PLSQL_CODE'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'items_to_submit', 'APP_THEME_MODE',
+  'language', 'PLSQL',
+  'plsql_code', wwv_flow_string.join(wwv_flow_t_varchar2(
+    'declare',
+    '    l_dark_id   number;',
+    '    l_light_id  number;',
+    '    l_cur_id    number;',
+    '    l_target_id number;',
+    'begin',
+    '    -- Dark style ID (Vita - Dark)',
+    '    select theme_style_id into l_dark_id',
+    '      from apex_application_theme_styles',
+    '     where application_id = :APP_ID',
+    '       and theme_number = 42',
+    '       and name = ''Vita - Dark'';',
+    '',
+    '    -- Current light style ID (Iris)',
+    '    select theme_style_id into l_light_id',
+    '      from apex_application_theme_styles',
+    '     where application_id = :APP_ID',
+    '       and theme_number = 42',
+    '       and (name = ''Iris'' or is_current = ''Yes'')',
+    '       and name != ''Vita''',
+    '       and rownum = 1;',
+    '',
+    '    l_cur_id := apex_theme.get_user_style(',
+    '        p_application_id => :APP_ID,',
+    '        p_user           => :APP_USER,',
+    '        p_theme_number   => 42',
+    '    );',
+    '',
+    '    if :APP_THEME_MODE = ''dark'' then',
+    '        l_target_id := l_dark_id;',
+    '    elsif :APP_THEME_MODE = ''light'' then',
+    '        l_target_id := l_light_id;',
+    '    elsif l_cur_id = l_dark_id then',
+    '        l_target_id := l_light_id;',
+    '    else',
+    '        l_target_id := l_dark_id;',
+    '    end if;',
+    '',
+    '    if :APP_USER is not null and :APP_USER != ''nobody'' then',
+    '        apex_theme.set_user_style(',
+    '            p_application_id => :APP_ID,',
+    '            p_user           => :APP_USER,',
+    '            p_theme_number   => 42,',
+    '            p_id             => l_target_id',
+    '        );',
+    '    end if;',
+    '',
+    '    apex_theme.set_session_style(',
+    '        p_theme_number => 42,',
+    '        p_id           => l_target_id',
+    '    );',
+    'end;')),
+  'show_processing', 'N')).to_clob
+,p_wait_for_result=>'Y'
 );
 end;
 /
@@ -1125,19 +1282,17 @@ wwv_flow_imp_page.create_page(
 ,p_step_template=>4073832297226169690
 ,p_page_template_options=>'#DEFAULT#'
 ,p_protection_level=>'C'
-,p_page_component_map=>'13'
 );
 wwv_flow_imp_page.create_page_plug(
  p_id=>wwv_flow_imp.id(6007283823991387)
 ,p_plug_name=>'TESTE'
 ,p_static_id=>'teste'
 ,p_region_template_options=>'#DEFAULT#'
-,p_escape_on_http_output=>'Y'
 ,p_plug_template=>2675494171183407654
 ,p_plug_display_sequence=>10
 ,p_plug_display_point=>'REGION_POSITION_01'
 ,p_plug_item_display_point=>'ABOVE'
-,p_plug_query_num_rows=>15
+,p_location=>null
 ,p_region_image=>'#APP_FILES#icons/app-icon-512.png'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'expand_shortcuts', 'N',
@@ -1159,7 +1314,6 @@ wwv_flow_imp_page.create_page(
 ,p_page_template_options=>'#DEFAULT#'
 ,p_page_is_public_y_n=>'Y'
 ,p_protection_level=>'C'
-,p_page_component_map=>'12'
 );
 wwv_flow_imp_page.create_page_plug(
  p_id=>wwv_flow_imp.id(6000227937991358)
@@ -1169,6 +1323,7 @@ wwv_flow_imp_page.create_page_plug(
 ,p_plug_template=>2675634334296186762
 ,p_plug_display_sequence=>10
 ,p_plug_item_display_point=>'ABOVE'
+,p_location=>null
 ,p_region_image=>'#APP_FILES#icons/app-icon-512.png'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'expand_shortcuts', 'N',
