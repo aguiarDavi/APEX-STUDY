@@ -22,7 +22,11 @@ flowchart TD
 2. **Consult Authority**: Read authoritative domain models in [`spec/schema.md`](file:///home/davi/Dev/apex-gemini/spec/schema.md), [`spec/spec.md`](file:///home/davi/Dev/apex-gemini/spec/spec.md), and [`spec/patterns.md`](file:///home/davi/Dev/apex-gemini/spec/patterns.md). Never infer schema, table names, or constraints from prompts alone.
 3. **Route Skill**: Activate the exact skill needed for the task (see Routing Matrix in Section 2).
 4. **Implement with Mandatory Prefixes**: Enforce the project **`WS_`** prefix on all database objects and PL/SQL units.
-5. **Record Progress**: Update [`spec/changelog.md`](file:///home/davi/Dev/apex-gemini/spec/changelog.md) at the end of the iteration.
+5. **Develop in `teste/` & Test in `tests/`**:
+   - Build all APEX application features, `.apx` pages, and shared components strictly inside **`teste/`**.
+   - Create and run all Playwright E2E tests, typed page objects, and test specs strictly inside **`tests/`** (`tests/e2e/`).
+6. **Create E2E Tests for Every Feature**: Every new UI screen, modal, drawer, or interactive user flow created or changed must be accompanied by comprehensive Playwright end-to-end tests in `tests/e2e/`.
+7. **Mandatory Changelog Logging**: In **every single iteration**, log all actions completed, technical challenges solved, and domain discoveries directly into [`spec/changelog.md`](file:///home/davi/Dev/apex-gemini/spec/changelog.md). Never complete an iteration without updating the changelog.
 
 ---
 
@@ -110,3 +114,6 @@ spec/
 3. **Offline Context over Guessing**: Never hallucinate database column names or APEX component properties. Query compiler truth or inspect `spec/schema.md`.
 4. **Autonomous Transactions**: `PRAGMA AUTONOMOUS_TRANSACTION` is strictly reserved for error/audit logging.
 5. **Security First**: Always bind `:APP_USER` and check authorization schemes (`WS_AUTH_LEADER`, `WS_AUTH_MUSICIAN`). Never concatenate variables into dynamic SQL.
+6. **Project Application Workspace**: All APEX application definitions, `.apx` pages, shared components, static files, and theme customizations must be created and edited inside **`teste/`**.
+7. **Comprehensive E2E Testing**: All testing occurs inside **`tests/`** (specifically `tests/e2e/`). Every new UI page, interactive region, drawer, modal, or form must include deterministic Playwright E2E tests verifying happy-path and edge-case behavior.
+8. **Mandatory Iteration Logging**: Every single iteration must log its activities, challenges faced and solved, and domain discoveries in [`spec/changelog.md`](file:///home/davi/Dev/apex-gemini/spec/changelog.md). Leaving an iteration without recording progress is strictly prohibited.
