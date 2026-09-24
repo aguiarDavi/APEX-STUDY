@@ -97,5 +97,20 @@ list navigation-menu (
         }
     )
 
+    entry musician-portal (
+        label: "Musician Portal"
+        icon {
+            imageIconCssClasses: fa-music
+        }
+        layout {
+            sequence: 20
+        }
+        link {
+            target: {
+                page: 10
+            }
+        }
+    )
+
 )
 

@@ -6,6 +6,26 @@ This document records the architectural history, modifications made, challenges 
 
 ## 1. Activity Log
 
+### [2026-09-24] - Sprint 2: Musician Mobile Portal Complete
+
+#### Added
+- **Musician Portal Page ([`teste/pages/p00010-musician-portal.apx`](file:///home/davi/Dev/apex-gemini/teste/pages/p00010-musician-portal.apx))**:
+  - Built mobile-first responsive dashboard with 3 distinct card regions:
+    - *Pending Invitations*: Service badge, role, notes, and 1-click Accept / Decline actions with checksum protection.
+    - *My Confirmed Services*: Setlist summary, scheduled roles, and rehearsal call times.
+    - *My Scheduled Blockouts*: Date ranges and vacation reasons.
+  - "Schedule Blockout" header action redirecting to modal dialog.
+  - Before-header response processing engine invoking `ws_pkg_musician_portal.accept_invitation`.
+- **Decline Reason Drawer Dialog ([`teste/pages/p00011-decline-drawer.apx`](file:///home/davi/Dev/apex-gemini/teste/pages/p00011-decline-drawer.apx))**:
+  - Drawer modal (`@/drawer`) capturing decline rationale and invoking `ws_pkg_musician_portal.decline_invitation`.
+- **Self-Service Blockout Modal ([`teste/pages/p00012-blockout-modal.apx`](file:///home/davi/Dev/apex-gemini/teste/pages/p00012-blockout-modal.apx))**:
+  - Modal dialog (`@/modal-dialog`) with multi-format date parsing (`YYYY-MM-DD`, `DD/MM/YYYY`, `MM/DD/YYYY`) invoking `ws_pkg_musician_portal.register_blockout`.
+- **Shared Components Integration ([`teste/shared-components/`](file:///home/davi/Dev/apex-gemini/teste/shared-components/))**:
+  - Wired Musician Portal entry into Navigation Menu (`lists.apx`) and Breadcrumb trails (`breadcrumbs.apx`).
+- **Comprehensive Playwright E2E Test Suite ([`tests/e2e/sprint2-musician-portal.e2e.mjs`](file:///home/davi/Dev/apex-gemini/tests/e2e/sprint2-musician-portal.e2e.mjs))**:
+  - Automated 8 test scenarios: unauthenticated redirect, login as `TEST_USER`, cards layout verification, blockout modal flow, 1-click invitation acceptance, desktop responsive grid, and zero console error assertion.
+  - 100% test pass rate achieved against live Oracle APEX 26.1 and Oracle Database 23ai.
+
 ### [2026-09-24] - Sprint 1: PL/SQL Business API Packages Complete
 
 #### Added
@@ -118,6 +138,18 @@ This document records the architectural history, modifications made, challenges 
 * **The Resolution**:
   Added `SET DEFINE OFF;` to all automated SQL test suites.
 
+### 9. APEXlang Card Action Items Mapping Syntax
+* **The Problem**:
+  When defining card button redirect targets in APEXlang (`items: { P10_ACTION: ACCEPT, P10_ROSTER_ID: &ROSTER_ID. }`), including commas between key-value pairs caused the compiler to append commas to the URL parameter values, producing malformed URLs (`ACCEPT,,&ROSTER_ID.,,&ROW_VERSION_NUMBER.`) where item slots shifted and substitutions were lost.
+* **The Resolution**:
+  In APEXlang, target items maps must be separated by newlines with no trailing commas (`P10_ACTION: ACCEPT \n P10_ROSTER_ID: &ROSTER_ID.`). The resulting APEX URL compiles cleanly with exact parameter matching.
+
+### 10. APEX 26.1 Web-Component DatePicker State & NLS Formats
+* **The Problem**:
+  The modern `<a-date-picker>` custom web component in APEX 26.1 maintains internal state in shadow DOM that does not automatically synchronize on basic HTML input value property setting, and clears values on blur if date strings do not match the expected application format mask (`M/D/YYYY`).
+* **The Resolution**:
+  Used the native APEX client JavaScript API (`apex.item('P12_START_DATE').setValue(...)`) in Playwright test suites, and created an impervious multi-format date parsing function in the backend PL/SQL process handling `YYYY-MM-DD`, `DD/MM/YYYY`, `MM/DD/YYYY`, and Oracle default formats.
+
 ---
 
 ## 3. Discoveries & Architectural Insights
@@ -130,3 +162,7 @@ This document records the architectural history, modifications made, challenges 
    - Volunteers abandon desktop-heavy church apps. In Oracle APEX, implementing a Cards region with high-contrast Green Accept / Red Decline buttons and modal YouTube playback provides an experience that rivals native mobile apps.
 4. **Oracle 23ai Implicit Index Efficiency**:
    - Declarative `UNIQUE` constraints in Oracle 23ai eliminate redundant index overhead. Paired with SQLcl MCP toolchain, schema DDL and test assertions execute synchronously within milliseconds with zero drift.
+5. **APEX Native JS API (`apex.item`) is Critical for Testing Modern Widgets**:
+   - As Oracle APEX moves increasingly toward Web Components and custom elements (`a-date-picker`, `a-combobox`), Playwright automation must leverage `page.evaluate(() => apex.item(id).setValue(val))` to ensure full reactivity and validation triggering.
+6. **Card Action Checksum Generation**:
+   - APEX automatically calculates session-level checksums for card action redirect links at render time when target page items have `sessionStateProtection: checksumRequiredSessionLevel`, allowing secure 1-click invitation acceptance without full page form submission.

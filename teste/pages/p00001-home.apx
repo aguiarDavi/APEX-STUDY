@@ -14,12 +14,32 @@ page 1 (
         formAutoComplete: false
     }
 
+    region breadcrumb (
+        name: Home
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: REGION_POSITION_01
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
     region teste (
         name: TESTE
         type: staticContent
         layout {
-            sequence: 10
-            slot: breadcrumbBar
+            sequence: 20
+            slot: body
         }
         appearance {
             template: @/hero

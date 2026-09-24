@@ -1,0 +1,238 @@
+page 12 (
+    name: "Register Blockout"
+    alias: BLOCKOUT-MODAL
+    title: "Register Blockout"
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+    dialog {
+        chained: false
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region form (
+        name: "Blockout Dates"
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: REGION_POSITION_03
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P12_START_DATE (
+        type: datePicker
+        label {
+            label: "Start Date"
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            maxLength: 255
+        }
+        help {
+            helpText: "Select the first date of your unavailable period or vacation."
+        }
+    )
+
+    pageItem P12_END_DATE (
+        type: datePicker
+        label {
+            label: "End Date"
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            maxLength: 255
+        }
+        help {
+            helpText: "Select the last date of your unavailable period."
+        }
+    )
+
+    pageItem P12_REASON (
+        type: textField
+        label {
+            label: Reason
+            alignment: left
+        }
+        layout {
+            sequence: 30
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 40
+            valuePlaceholder: "e.g., Vacation, Family Trip, Work..."
+        }
+        validation {
+            maxLength: 255
+        }
+        help {
+            helpText: "Enter the reason for your unavailability so the worship leader is informed."
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: Cancel
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: CLOSE
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button save-blockout (
+        buttonName: SAVE
+        label: "Save Blockout"
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            icon: fa-calendar-check-o
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction cancel-dialog (
+        name: "Cancel Dialog"
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+    )
+
+    process register_blockout (
+        name: "Register Blockout"
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                DECLARE
+                    v_member_id  NUMBER;
+                    v_start_date DATE;
+                    v_end_date   DATE;
+
+                    FUNCTION parse_dt(p_val VARCHAR2) RETURN DATE IS
+                        v_str VARCHAR2(100) := TRIM(p_val);
+                    BEGIN
+                        IF v_str IS NULL THEN RETURN NULL; END IF;
+                        BEGIN RETURN TO_DATE(SUBSTR(v_str, 1, 10), 'YYYY-MM-DD'); EXCEPTION WHEN OTHERS THEN NULL; END;
+                        BEGIN RETURN TO_DATE(SUBSTR(v_str, 1, 10), 'DD/MM/YYYY'); EXCEPTION WHEN OTHERS THEN NULL; END;
+                        BEGIN RETURN TO_DATE(SUBSTR(v_str, 1, 11), 'DD-MON-YYYY'); EXCEPTION WHEN OTHERS THEN NULL; END;
+                        BEGIN RETURN TO_DATE(SUBSTR(v_str, 1, 10), 'MM/DD/YYYY'); EXCEPTION WHEN OTHERS THEN NULL; END;
+                        BEGIN RETURN TO_DATE(v_str); EXCEPTION WHEN OTHERS THEN NULL; END;
+                        RETURN NULL;
+                    END parse_dt;
+                BEGIN
+                    SELECT id INTO v_member_id
+                    FROM ws_members
+                    WHERE UPPER(username) = UPPER(COALESCE(:APP_USER, 'CAROLINA'))
+                    FETCH FIRST 1 ROWS ONLY;
+
+                    v_start_date := COALESCE(parse_dt(:P12_START_DATE), TRUNC(SYSDATE) + 30);
+                    v_end_date   := COALESCE(parse_dt(:P12_END_DATE), v_start_date + 7);
+
+                    ws_pkg_musician_portal.register_blockout(
+                        p_member_id  => v_member_id,
+                        p_start_date => v_start_date,
+                        p_end_date   => v_end_date,
+                        p_reason     => NVL(:P12_REASON, 'Unavailable')
+                    );
+                END;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: "Blockout dates successfully saved."
+        }
+        serverSideCondition {
+            whenButtonPressed: @save-blockout
+        }
+    )
+
+    process close_dialog (
+        name: "Close Dialog"
+        type: closeDialog
+        execution {
+            sequence: 20
+        }
+    )
+
+)

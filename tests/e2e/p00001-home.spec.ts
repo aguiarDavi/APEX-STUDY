@@ -5,15 +5,27 @@
  * @apx/testkit — see that package before touching any of the helpers used below.
  * Navigation and item access go through the generated page object
  * (./p00001-home.page.js), not raw testkit calls, so both stay in sync.
- * Regions present in metadata: teste
+ * Regions present in metadata: breadcrumb, teste
  * No interactiveReport/cards/facetedSearch regions on this page -- no region resolve-check to emit.
- * Other region types NOT covered by an auto-generated assertion (no verified DOM convention -- see docs/grammar-assumptions.md "Still open"): teste (staticContent).
+ * Other region types NOT covered by an auto-generated assertion (no verified DOM convention -- see docs/grammar-assumptions.md "Still open"): breadcrumb (breadcrumb), teste (staticContent).
+ * NOT AUTO-ROUTABLE (navigation unsafe): apx-testkit: navigation unsafe (security.pageAccessProtection: argumentsMustHaveChecksum on a non-public page) -- a bare page.goto() is confirmed to redirect an authenticated session to /login. See @apx/testkit's navigateViaUiPath() for the confirmed-working alternative, and docs/quirks/26.1.json page-access-protection-blocks-bare-navigation.
  */
 import { expect, test } from '@playwright/test';
 import { normalizeTitle } from '@apx/testkit';
 import { HomePage } from './p00001-home.page.js';
 
-test.describe('page 1: Home', () => {
+test.describe('page 1: Home [not auto-routable -- skipped]', () => {
+  test.beforeEach(async () => {
+    // apx-testkit: this page cannot be safely reached by a normal
+    // generated test -- see this file's header comment (NOT
+    // AUTO-ROUTABLE lines) for the specific reason(s). Every test below
+    // is unconditionally skipped rather than generated to
+    // guaranteed-fail.
+    test.skip(
+      true,
+      'apx-testkit: navigation unsafe (security.pageAccessProtection: argumentsMustHaveChecksum on a non-public page) -- a bare page.goto() is confirmed to redirect an authenticated session to /login. See @apx/testkit\'s navigateViaUiPath() for the confirmed-working alternative, and docs/quirks/26.1.json page-access-protection-blocks-bare-navigation.',
+    );
+  });
   test('loads via alias URL with clean console' , async ({ page }) => {
     const po = new HomePage(page);
     const errors = await po.goto();

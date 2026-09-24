@@ -1,0 +1,381 @@
+page 10 (
+    name: "Musician Portal"
+    alias: MUSICIAN-PORTAL
+    title: "Musician Portal"
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: "Musician Portal"
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: REGION_POSITION_01
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    button schedule-blockout (
+        buttonName: SCHEDULE_BLOCKOUT
+        label: "Schedule Blockout"
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            icon: fa-calendar-plus-o
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 12
+            }
+        }
+    )
+
+    region pending-invitations (
+        name: "Pending Invitations"
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT 
+                    sr.id AS roster_id,
+                    sr.service_id,
+                    sr.row_version_number,
+                    s.name AS service_name,
+                    TO_CHAR(s.service_date, 'FMDD/MM/YYYY HH24:MI') AS service_date_formatted,
+                    i.name AS instrument_name,
+                    CASE i.category
+                        WHEN 'VOCALS' THEN 'fa-microphone'
+                        WHEN 'RHYTHM' THEN 'fa-music'
+                        WHEN 'MELODY' THEN 'fa-headphones'
+                        ELSE 'fa-sliders'
+                    END AS instrument_icon,
+                    sr.status AS roster_status,
+                    s.notes AS service_notes
+                FROM ws_service_roster sr
+                JOIN ws_services s ON s.id = sr.service_id
+                JOIN ws_instruments i ON i.id = sr.instrument_id
+                JOIN ws_members m ON m.id = sr.member_id
+                WHERE UPPER(m.username) = UPPER(COALESCE(:APP_USER, 'CAROLINA'))
+                  AND sr.status = 'PENDING'
+                  AND s.status = 'PUBLISHED'
+                  AND s.service_date >= TRUNC(SYSDATE)
+                ORDER BY s.service_date ASC
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: #DEFAULT#
+        }
+        card {
+            primaryKeyColumn1: ROSTER_ID
+        }
+        title {
+            advancedFormatting: false
+            column: SERVICE_NAME
+        }
+        subtitle {
+            advancedFormatting: false
+            column: SERVICE_DATE_FORMATTED
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression: "Role: <strong>&INSTRUMENT_NAME!HTML.</strong><br>Notes: &SERVICE_NOTES!HTML."
+        }
+        iconAndBadge {
+            iconSource: iconClassColumn
+            iconColumn: INSTRUMENT_ICON
+            iconPosition: start
+            badgeColumn: ROSTER_STATUS
+            badgeCssClasses: [
+                u-warning
+            ]
+        }
+        messages {
+            whenNoDataFound: "No pending invitations at this time. You're all caught up!"
+        }
+        componentAppearance {
+            layout: grid
+            gridColumns: 3
+        }
+
+        action accept (
+            type: button
+            label: Accept
+            layout {
+                sequence: 10
+                position: primary
+            }
+            appearance {
+                displayType: textWithIcon
+                icon: fa-check
+                hot: true
+            }
+            behavior {
+                type: redirectThisApp
+                target: {
+                    page: 10
+                    items: {
+                        P10_ACTION: ACCEPT
+                        P10_ROSTER_ID: &ROSTER_ID.
+                        P10_ROW_VERSION: &ROW_VERSION_NUMBER.
+                    }
+                }
+            }
+        )
+
+        action decline (
+            type: button
+            label: Decline
+            layout {
+                sequence: 20
+                position: secondary
+            }
+            appearance {
+                displayType: textWithIcon
+                icon: fa-times
+            }
+            behavior {
+                type: redirectThisApp
+                target: {
+                    page: 11
+                    items: {
+                        P11_ROSTER_ID: &ROSTER_ID.
+                        P11_ROW_VERSION: &ROW_VERSION_NUMBER.
+                    }
+                }
+            }
+        )
+    )
+
+    region confirmed-services (
+        name: "My Confirmed Services"
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT 
+                    sr.id AS roster_id,
+                    sr.service_id,
+                    s.name AS service_name,
+                    TO_CHAR(s.service_date, 'FMDD/MM/YYYY HH24:MI') AS service_date_formatted,
+                    i.name AS instrument_name,
+                    CASE i.category
+                        WHEN 'VOCALS' THEN 'fa-microphone'
+                        WHEN 'RHYTHM' THEN 'fa-music'
+                        WHEN 'MELODY' THEN 'fa-headphones'
+                        ELSE 'fa-sliders'
+                    END AS instrument_icon,
+                    sr.status AS roster_status,
+                    (
+                        SELECT LISTAGG(so.title || ' (' || ssl.service_key || ')', ', ') WITHIN GROUP (ORDER BY ssl.play_order)
+                        FROM ws_service_setlist ssl
+                        JOIN ws_songs so ON so.id = ssl.song_id
+                        WHERE ssl.service_id = s.id
+                    ) AS setlist_songs
+                FROM ws_service_roster sr
+                JOIN ws_services s ON s.id = sr.service_id
+                JOIN ws_instruments i ON i.id = sr.instrument_id
+                JOIN ws_members m ON m.id = sr.member_id
+                WHERE UPPER(m.username) = UPPER(COALESCE(:APP_USER, 'CAROLINA'))
+                  AND sr.status = 'ACCEPTED'
+                  AND s.service_date >= TRUNC(SYSDATE)
+                ORDER BY s.service_date ASC
+                ```
+        }
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: #DEFAULT#
+        }
+        card {
+            primaryKeyColumn1: ROSTER_ID
+        }
+        title {
+            advancedFormatting: false
+            column: SERVICE_NAME
+        }
+        subtitle {
+            advancedFormatting: false
+            column: SERVICE_DATE_FORMATTED
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression: "Role: <strong>&INSTRUMENT_NAME!HTML.</strong><br>Setlist: &SETLIST_SONGS!HTML."
+        }
+        iconAndBadge {
+            iconSource: iconClassColumn
+            iconColumn: INSTRUMENT_ICON
+            iconPosition: start
+            badgeColumn: ROSTER_STATUS
+            badgeCssClasses: [
+                u-success
+            ]
+        }
+        messages {
+            whenNoDataFound: "No upcoming confirmed services."
+        }
+        componentAppearance {
+            layout: grid
+            gridColumns: 3
+        }
+    )
+
+    region my-blockouts (
+        name: "My Scheduled Blockouts"
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT
+                    mb.id AS blockout_id,
+                    'Unavailable' AS title,
+                    TO_CHAR(mb.start_date, 'DD/MM/YYYY') || ' to ' || TO_CHAR(mb.end_date, 'DD/MM/YYYY') AS date_range,
+                    mb.reason AS blockout_reason,
+                    'fa-calendar-times-o' AS cal_icon
+                FROM ws_member_blockouts mb
+                JOIN ws_members m ON m.id = mb.member_id
+                WHERE UPPER(m.username) = UPPER(COALESCE(:APP_USER, 'CAROLINA'))
+                  AND mb.end_date >= TRUNC(SYSDATE)
+                ORDER BY mb.start_date ASC
+                ```
+        }
+        layout {
+            sequence: 40
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: #DEFAULT#
+        }
+        card {
+            primaryKeyColumn1: BLOCKOUT_ID
+        }
+        title {
+            advancedFormatting: false
+            column: TITLE
+        }
+        subtitle {
+            advancedFormatting: false
+            column: DATE_RANGE
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression: "Reason: &BLOCKOUT_REASON!HTML."
+        }
+        iconAndBadge {
+            iconSource: iconClassColumn
+            iconColumn: CAL_ICON
+            iconPosition: start
+        }
+        messages {
+            whenNoDataFound: "No upcoming blockouts registered."
+        }
+        componentAppearance {
+            layout: grid
+            gridColumns: 3
+        }
+    )
+
+    pageItem P10_ACTION (
+        type: hidden
+        layout {
+            sequence: 10
+            slot: body
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P10_ROSTER_ID (
+        type: hidden
+        layout {
+            sequence: 20
+            slot: body
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P10_ROW_VERSION (
+        type: hidden
+        layout {
+            sequence: 30
+            slot: body
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    process process_musician_response (
+        name: "Process Musician Response"
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                IF :P10_ACTION = 'ACCEPT' AND :P10_ROSTER_ID IS NOT NULL THEN
+                    ws_pkg_musician_portal.accept_invitation(
+                        p_roster_id   => TO_NUMBER(:P10_ROSTER_ID),
+                        p_row_version => TO_NUMBER(:P10_ROW_VERSION)
+                    );
+                    :P10_ACTION := NULL;
+                    :P10_ROSTER_ID := NULL;
+                    :P10_ROW_VERSION := NULL;
+                END IF;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        successMessage {
+            successMessage: "Invitation accepted! Thank you for serving."
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P10_ROSTER_ID
+        }
+    )
+
+)
