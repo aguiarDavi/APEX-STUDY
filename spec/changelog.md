@@ -6,6 +6,27 @@ This document records the architectural history, modifications made, challenges 
 
 ## 1. Activity Log
 
+### [2026-09-24] - Sprint 3: Leader Scheduling Matrix & Management Complete
+
+#### Added
+- **Leader Scheduling Matrix Page ([`teste/pages/p00020-leader-matrix.apx`](file:///home/davi/Dev/apex-gemini/teste/pages/p00020-leader-matrix.apx))**:
+  - Implemented active service context switcher (`P20_SERVICE_ID`) with auto-selection of nearest upcoming service.
+  - Action toolbar with 3 primary operational triggers:
+    - *"Instantiate Template"*: Modal flow to generate band slots from predefined templates.
+    - *"Auto-Fill Bands"*: Atomic randomizer invoking `ws_pkg_scheduler.auto_assign_roster` with concurrency row locking.
+    - *"Publish Schedule"*: Batch lifecycle transition from `DRAFT` to `PUBLISHED` releasing invites.
+  - Proactive conflict surfacing region querying `ws_v_roster_conflicts` with quick "Find Replacement" action.
+  - Roster status cards region displaying instruments, assigned musicians, call times, and status badges (`ACCEPTED`, `PENDING`, `DECLINED`).
+- **Assign / Replace Musician Modal with Smart LOV ([`teste/pages/p00021-assign-modal.apx`](file:///home/davi/Dev/apex-gemini/teste/pages/p00021-assign-modal.apx))**:
+  - Built Smart LOV evaluating instrument proficiency, active vacation blockouts, and same-day scheduling collisions in real time.
+  - Visual availability tags (`⚠️ [BLOCKED OUT: Reason]`, `(Available)`).
+  - Full audit trail preservation (`replaced_member_id`) upon slot replacement.
+- **Instantiate Template Modal ([`teste/pages/p00022-template-modal.apx`](file:///home/davi/Dev/apex-gemini/teste/pages/p00022-template-modal.apx))**:
+  - Modal dialog capturing template selection and executing `ws_pkg_scheduler.apply_template`.
+- **Comprehensive Playwright E2E Test Suite ([`tests/e2e/sprint3-leader-matrix.e2e.mjs`](file:///home/davi/Dev/apex-gemini/tests/e2e/sprint3-leader-matrix.e2e.mjs))**:
+  - Automated 7 end-to-end test scenarios: navigation, toolbar verification, template instantiation, band auto-fill randomizer, Smart LOV inspection, manual slot assignment, schedule publication, and console health check.
+  - 100% test pass rate achieved against Oracle APEX 26.1 and Oracle Database 23ai.
+
 ### [2026-09-24] - Sprint 2: Musician Mobile Portal Complete
 
 #### Added
@@ -150,6 +171,32 @@ This document records the architectural history, modifications made, challenges 
 * **The Resolution**:
   Used the native APEX client JavaScript API (`apex.item('P12_START_DATE').setValue(...)`) in Playwright test suites, and created an impervious multi-format date parsing function in the backend PL/SQL process handling `YYYY-MM-DD`, `DD/MM/YYYY`, `MM/DD/YYYY`, and Oracle default formats.
 
+### 11. APEXlang SelectList LOV Declaration Constraints
+* **The Problem**:
+  Declaring `listValues { location: localDatabase, type: sqlQuery, query: ... }` inside selectList items triggers APEXlang compilation errors (`LOV_NOT_FOUND`, `INVALID_PROPERTY: location`, `INVALID_PROPERTY: query`).
+* **The Resolution**:
+  APEXlang enforces the canonical structure:
+  ```apexlang
+  lov {
+      type: sqlQuery
+      sqlQuery: ```sql SELECT d, r FROM ... ```
+      displayNullValue: true
+  }
+  ```
+  And for item defaults from queries:
+  ```apexlang
+  default {
+      type: sqlQuerySingleValue
+      sqlQuerySingleValue: ```sql SELECT id FROM ... ```
+  }
+  ```
+
+### 12. Conflict View Column Name Drift
+* **The Problem**:
+  Cards region query referencing `c.musician_name` on `ws_v_roster_conflicts` failed with `ORA-00904: "C"."MUSICIAN_NAME": invalid identifier` because the underlying view defines the volunteer's name as `MEMBER_NAME`.
+* **The Resolution**:
+  Consulted compiler truth via SQLcl (`DESC ws_v_roster_conflicts`) and aliased `c.member_name AS musician_name` and joined `ws_service_roster` to acquire the target `instrument_id`.
+
 ---
 
 ## 3. Discoveries & Architectural Insights
@@ -166,3 +213,5 @@ This document records the architectural history, modifications made, challenges 
    - As Oracle APEX moves increasingly toward Web Components and custom elements (`a-date-picker`, `a-combobox`), Playwright automation must leverage `page.evaluate(() => apex.item(id).setValue(val))` to ensure full reactivity and validation triggering.
 6. **Card Action Checksum Generation**:
    - APEX automatically calculates session-level checksums for card action redirect links at render time when target page items have `sessionStateProtection: checksumRequiredSessionLevel`, allowing secure 1-click invitation acceptance without full page form submission.
+7. **Smart LOVs Eradicate Human Scheduling Errors**:
+   - By embedding blockout period checks (`:P21_SERVICE_DATE BETWEEN mb.start_date AND mb.end_date`) and same-day service collision detection directly inside the LOV SQL query, leaders receive immediate visual warning cues (`⚠️ [BLOCKED OUT: Reason]`, `(Available)`) before saving assignments, avoiding back-and-forth friction with volunteers.

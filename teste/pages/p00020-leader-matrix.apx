@@ -1,0 +1,414 @@
+page 20 (
+    name: "Leader Scheduling Matrix"
+    alias: LEADER-MATRIX
+    title: "Leader Scheduling Matrix"
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: "Leader Scheduling Matrix"
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: REGION_POSITION_01
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region service-selector (
+        name: "Active Service"
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/collapsible
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P20_SERVICE_ID (
+        type: selectList
+        label {
+            label: "Select Service"
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            region: @service-selector
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT s.name || ' (' || TO_CHAR(s.service_date, 'DY, DD/MM/YYYY') || ') [' || s.status || ']' AS d,
+                       s.id AS r
+                FROM ws_services s
+                ORDER BY s.service_date DESC
+                ```
+        }
+        default {
+            type: sqlQuerySingleValue
+            sqlQuerySingleValue:
+                ```sql
+                SELECT id 
+                FROM ws_services 
+                ORDER BY ABS(service_date - TRUNC(SYSDATE)) ASC 
+                FETCH FIRST 1 ROWS ONLY
+                ```
+        }
+    )
+
+    region toolbar (
+        name: Actions
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    button apply-template (
+        buttonName: APPLY_TEMPLATE
+        label: "Instantiate Template"
+        layout {
+            sequence: 10
+            region: @toolbar
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            icon: fa-clone
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 22
+                items: {
+                    P22_SERVICE_ID: &P20_SERVICE_ID.
+                }
+            }
+        }
+    )
+
+    button auto-fill (
+        buttonName: AUTO_FILL
+        label: "Auto-Fill Bands"
+        layout {
+            sequence: 20
+            region: @toolbar
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            icon: fa-magic
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button publish-service (
+        buttonName: PUBLISH_SERVICE
+        label: "Publish Schedule"
+        layout {
+            sequence: 30
+            region: @toolbar
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            icon: fa-paper-plane
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    region roster-conflicts (
+        name: "Scheduling Conflicts (Retroactive Blockouts)"
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT 
+                    c.roster_id,
+                    c.service_id,
+                    c.member_id,
+                    sr.instrument_id,
+                    c.instrument_name,
+                    c.member_name AS musician_name,
+                    c.blockout_reason,
+                    TO_CHAR(c.blockout_start, 'DD/MM/YYYY') AS blockout_start_fmt,
+                    TO_CHAR(c.blockout_end, 'DD/MM/YYYY') AS blockout_end_fmt,
+                    'fa-exclamation-triangle' AS alert_icon,
+                    'CONFLICT' AS conflict_badge
+                FROM ws_v_roster_conflicts c
+                JOIN ws_service_roster sr ON sr.id = c.roster_id
+                WHERE c.service_id = TO_NUMBER(:P20_SERVICE_ID)
+                ORDER BY c.instrument_name ASC
+                ```
+        }
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: #DEFAULT#
+        }
+        card {
+            primaryKeyColumn1: ROSTER_ID
+        }
+        title {
+            advancedFormatting: false
+            column: MUSICIAN_NAME
+        }
+        subtitle {
+            advancedFormatting: false
+            column: INSTRUMENT_NAME
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression: "Reason: <strong>&BLOCKOUT_REASON!HTML.</strong><br>Blocked: &BLOCKOUT_START_FMT. to &BLOCKOUT_END_FMT."
+        }
+        iconAndBadge {
+            iconSource: iconClassColumn
+            iconColumn: ALERT_ICON
+            iconPosition: start
+            badgeColumn: CONFLICT_BADGE
+            badgeCssClasses: [
+                u-danger
+            ]
+        }
+        messages {
+            whenNoDataFound: "No scheduling conflicts detected for this service."
+        }
+        componentAppearance {
+            layout: grid
+            gridColumns: 3
+        }
+
+        action resolve-conflict (
+            type: button
+            label: "Find Replacement"
+            layout {
+                sequence: 10
+                position: primary
+            }
+            appearance {
+                displayType: textWithIcon
+                icon: fa-user-plus
+                hot: true
+            }
+            behavior {
+                type: redirectThisApp
+                target: {
+                    page: 21
+                    items: {
+                        P21_ROSTER_ID: &ROSTER_ID.
+                        P21_SERVICE_ID: &SERVICE_ID.
+                        P21_INSTRUMENT_ID: &INSTRUMENT_ID.
+                        P21_INSTRUMENT_NAME: &INSTRUMENT_NAME.
+                    }
+                }
+            }
+        )
+    )
+
+    region roster-matrix (
+        name: "Band Roster & Schedule Status"
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT 
+                    sr.id AS roster_id,
+                    sr.service_id,
+                    sr.instrument_id,
+                    sr.row_version_number,
+                    i.name AS instrument_name,
+                    CASE i.category
+                        WHEN 'VOCALS' THEN 'fa-microphone'
+                        WHEN 'RHYTHM' THEN 'fa-music'
+                        WHEN 'MELODY' THEN 'fa-headphones'
+                        ELSE 'fa-sliders'
+                    END AS instrument_icon,
+                    COALESCE(m.full_name, '--- Unassigned Slot ---') AS musician_name,
+                    sr.status AS roster_status,
+                    CASE sr.status
+                        WHEN 'ACCEPTED' THEN 'u-success'
+                        WHEN 'PENDING' THEN 'u-warning'
+                        WHEN 'DECLINED' THEN 'u-danger'
+                        ELSE 'u-normal'
+                    END AS status_badge_class,
+                    CASE 
+                        WHEN sr.status = 'DECLINED' THEN 'Declined: ' || sr.decline_reason
+                        WHEN sr.status = 'ACCEPTED' THEN 'Confirmed on ' || TO_CHAR(sr.confirmed_at, 'DD/MM HH24:MI')
+                        WHEN sr.status = 'PENDING' THEN 'Pending Musician Acceptance'
+                        ELSE 'Empty Slot - Click Assign to fill'
+                    END AS status_description
+                FROM ws_service_roster sr
+                JOIN ws_instruments i ON i.id = sr.instrument_id
+                LEFT JOIN ws_members m ON m.id = sr.member_id
+                WHERE sr.service_id = TO_NUMBER(:P20_SERVICE_ID)
+                ORDER BY i.display_order ASC, i.name ASC
+                ```
+        }
+        layout {
+            sequence: 40
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: #DEFAULT#
+        }
+        card {
+            primaryKeyColumn1: ROSTER_ID
+        }
+        title {
+            advancedFormatting: false
+            column: INSTRUMENT_NAME
+        }
+        subtitle {
+            advancedFormatting: false
+            column: MUSICIAN_NAME
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression: "&STATUS_DESCRIPTION!HTML."
+        }
+        iconAndBadge {
+            iconSource: iconClassColumn
+            iconColumn: INSTRUMENT_ICON
+            iconPosition: start
+            badgeColumn: ROSTER_STATUS
+            badgeCssClasses: [
+                u-info
+            ]
+        }
+        messages {
+            whenNoDataFound: "No roster slots instantiated yet. Click 'Instantiate Template' to create band slots."
+        }
+        componentAppearance {
+            layout: grid
+            gridColumns: 3
+        }
+
+        action assign-slot (
+            type: button
+            label: "Assign / Replace"
+            layout {
+                sequence: 10
+                position: primary
+            }
+            appearance {
+                displayType: textWithIcon
+                icon: fa-user-plus
+                hot: true
+            }
+            behavior {
+                type: redirectThisApp
+                target: {
+                    page: 21
+                    items: {
+                        P21_ROSTER_ID: &ROSTER_ID.
+                        P21_SERVICE_ID: &SERVICE_ID.
+                        P21_INSTRUMENT_ID: &INSTRUMENT_ID.
+                        P21_INSTRUMENT_NAME: &INSTRUMENT_NAME.
+                    }
+                }
+            }
+        )
+    )
+
+    process process_auto_fill (
+        name: "Auto-Fill Bands"
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                BEGIN
+                    ws_pkg_scheduler.auto_assign_roster(
+                        p_service_id => TO_NUMBER(:P20_SERVICE_ID)
+                    );
+                END;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: "Band slots automatically assigned based on volunteer availability and skills!"
+        }
+        serverSideCondition {
+            whenButtonPressed: @auto-fill
+        }
+    )
+
+    process process_publish (
+        name: "Publish Service"
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                BEGIN
+                    ws_pkg_service_mgmt.publish_service(
+                        p_service_id => TO_NUMBER(:P20_SERVICE_ID)
+                    );
+                END;
+                ```
+        }
+        execution {
+            sequence: 20
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: "Service successfully published! Invitations released to volunteers."
+        }
+        serverSideCondition {
+            whenButtonPressed: @publish-service
+        }
+    )
+
+)

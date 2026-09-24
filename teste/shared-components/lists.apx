@@ -112,5 +112,21 @@ list navigation-menu (
         }
     )
 
+    entry leader-matrix (
+        label: "Scheduling Matrix"
+        icon {
+            imageIconCssClasses: fa-calendar-check-o
+        }
+        layout {
+            sequence: 30
+        }
+        link {
+            target: {
+                page: 20
+            }
+        }
+    )
+
 )
+
 

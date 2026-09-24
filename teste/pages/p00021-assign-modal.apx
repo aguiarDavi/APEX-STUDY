@@ -1,0 +1,278 @@
+page 21 (
+    name: "Assign Musician"
+    alias: ASSIGN-MODAL
+    title: "Assign Musician to Slot"
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+    dialog {
+        chained: false
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region form (
+        name: "Slot Assignment"
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: REGION_POSITION_03
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P21_ROSTER_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @form
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P21_SERVICE_ID (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @form
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P21_INSTRUMENT_ID (
+        type: hidden
+        layout {
+            sequence: 30
+            region: @form
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P21_INSTRUMENT_NAME (
+        type: displayOnly
+        label {
+            label: Instrument
+            alignment: left
+        }
+        layout {
+            sequence: 40
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P21_MEMBER_ID (
+        type: selectList
+        label {
+            label: Musician
+            alignment: left
+        }
+        layout {
+            sequence: 50
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT 
+                    m.full_name || 
+                    CASE 
+                        WHEN mb.id IS NOT NULL THEN ' ⚠️ [BLOCKED OUT: ' || mb.reason || ']'
+                        WHEN sr_today.id IS NOT NULL THEN ' ⚠️ [ALREADY SCHEDULED TODAY]'
+                        ELSE '  (Available)'
+                    END AS d,
+                    m.id AS r
+                FROM ws_members m
+                JOIN ws_member_instruments mi ON mi.member_id = m.id AND mi.instrument_id = TO_NUMBER(:P21_INSTRUMENT_ID)
+                LEFT JOIN ws_services s ON s.id = TO_NUMBER(:P21_SERVICE_ID)
+                LEFT JOIN ws_member_blockouts mb 
+                       ON mb.member_id = m.id 
+                      AND s.service_date BETWEEN mb.start_date AND mb.end_date
+                LEFT JOIN ws_service_roster sr_today
+                       ON sr_today.member_id = m.id
+                      AND sr_today.service_id = TO_NUMBER(:P21_SERVICE_ID)
+                      AND sr_today.id != NVL(TO_NUMBER(:P21_ROSTER_ID), -1)
+                WHERE m.is_active = 'Y'
+                ORDER BY mb.id NULLS FIRST, sr_today.id NULLS FIRST, m.full_name ASC
+                ```
+            displayNullValue: true
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+
+    pageItem P21_STATUS (
+        type: selectList
+        label {
+            label: "Roster Status"
+            alignment: left
+        }
+        layout {
+            sequence: 60
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT 'Pending Invitation' AS d, 'PENDING' AS r FROM dual
+                UNION ALL
+                SELECT 'Confirmed / Accepted' AS d, 'ACCEPTED' AS r FROM dual
+                ```
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: Cancel
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: CLOSE
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: "Save Assignment"
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            icon: fa-save
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction cancel-dialog (
+        name: "Cancel Dialog"
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+    )
+
+    process save_assignment (
+        name: "Save Assignment"
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                DECLARE
+                    v_old_member_id NUMBER;
+                    v_old_status    VARCHAR2(30);
+                BEGIN
+                    SELECT member_id, status
+                      INTO v_old_member_id, v_old_status
+                      FROM ws_service_roster
+                     WHERE id = TO_NUMBER(:P21_ROSTER_ID);
+
+                    UPDATE ws_service_roster
+                       SET member_id          = TO_NUMBER(:P21_MEMBER_ID),
+                           status             = :P21_STATUS,
+                           replaced_member_id = CASE WHEN v_old_status = 'DECLINED' THEN v_old_member_id ELSE replaced_member_id END,
+                           row_version_number = row_version_number + 1,
+                           confirmed_at       = CASE WHEN :P21_STATUS = 'ACCEPTED' THEN LOCALTIMESTAMP ELSE NULL END
+                     WHERE id = TO_NUMBER(:P21_ROSTER_ID);
+                END;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: "Slot successfully assigned!"
+        }
+        serverSideCondition {
+            whenButtonPressed: @save
+        }
+    )
+
+    process close_dialog (
+        name: "Close Dialog"
+        type: closeDialog
+        execution {
+            sequence: 20
+        }
+    )
+
+)
