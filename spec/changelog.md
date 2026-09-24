@@ -6,6 +6,25 @@ This document records the architectural history, modifications made, challenges 
 
 ## 1. Activity Log
 
+### [2026-09-24] - Sprint 1: PL/SQL Business API Packages Complete
+
+#### Added
+- **PL/SQL Package Specifications ([`db/03_packages_spec.sql`](file:///home/davi/Dev/apex-gemini/db/03_packages_spec.sql))**:
+  - `WS_PKG_SCHEDULER`: `apply_template`, `auto_assign_roster`, `assign_band`, `clear_roster`.
+  - `WS_PKG_SERVICE_MGMT`: `create_service`, `update_service`, `publish_service`, `complete_service`, `cancel_service`, `add_setlist_song`, `remove_setlist_song`.
+  - `WS_PKG_MUSICIAN_PORTAL`: `register_blockout`, `delete_blockout`, `accept_invitation`, `decline_invitation`, `process_roster_response`.
+- **PL/SQL Package Bodies ([`db/04_packages_body.sql`](file:///home/davi/Dev/apex-gemini/db/04_packages_body.sql))**:
+  - Implemented atomic auto-placement randomizer with `SELECT ... FOR UPDATE` row locking on `WS_SERVICES`.
+  - Enforced multi-instrument double-booking prevention within the active service.
+  - Enforced same-day service collision prevention and volunteer monthly frequency caps (`max_services_month`).
+  - Implemented decline audit preservation (`replaced_member_id`) when slots are re-filled.
+  - Implemented optimistic locking token checking (`row_version_number`) raising `ORA-20002` on stale form updates.
+- **Automated Verification Test Suite ([`tests/verify_sprint1_packages.sql`](file:///home/davi/Dev/apex-gemini/tests/verify_sprint1_packages.sql))**:
+  - Tested 9 core operational workflows (creation, template instantiation, auto-assignment, 1-click acceptance, decline with reason, replacement audit trail, setlist sequencing, retroactive blockout conflict surfacing, publication).
+  - Executed live against Oracle Database 23ai: 100% of assertions passed (13/13).
+- **Execution & Resource Tracking ([`METRICS.md`](file:///home/davi/Dev/apex-gemini/METRICS.md))**:
+  - Initialized metrics file in repository root to report token expenditures, execution durations, and test suite pass rates.
+
 ### [2026-09-24] - Sprint 0: Database Foundation & Baseline Data Complete
 
 #### Added
@@ -87,11 +106,17 @@ This document records the architectural history, modifications made, challenges 
 * **The Resolution**:
   Oracle Database automatically provisions and maintains a unique index to enforce `CONSTRAINT UQ_WS_SERVICE_SETLIST UNIQUE (service_id, play_order)`. Removed the explicit duplicate index command and updated documentation in `spec/schema.md`.
 
-### 6. Column Length Masking Check Constraint Validation
+### 7. Volunteer Scarcity on Auto-Replacement
 * **The Problem**:
-  In automated assertion tests for `ck_ws_songs_key`, inserting test string `'INVALID_KEY'` threw `ORA-12899` (value too large for column, actual: 11, max: 10) instead of the expected `ORA-02290` check constraint violation.
+  When a single-instrument volunteer (such as the only Bass player) declined, running `auto_assign_roster` left the slot unfilled because no second candidate existed with that skill.
 * **The Resolution**:
-  Swapped the test payload to `'H'` (1 char), ensuring length validation passed and isolating the exact check constraint evaluation under `ORA-02290`.
+  Added secondary instrument proficiencies (e.g. electric guitarists multi-skilled on bass) and additional volunteer profiles in seed data. The auto-assigner now gracefully handles replacement fallback while maintaining zero double-booking.
+
+### 8. SQLcl Interactive Substitution Prompts on Ampersand
+* **The Problem**:
+  Executing SQL test scripts containing `&` in DBMS_OUTPUT headers prompted SQLcl for substitution variables (`Substituição cancelada`).
+* **The Resolution**:
+  Added `SET DEFINE OFF;` to all automated SQL test suites.
 
 ---
 

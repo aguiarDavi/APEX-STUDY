@@ -120,17 +120,33 @@ SELECT m.id, i.id, 'Y', 'ADVANCED' FROM ws_members m, ws_instruments i WHERE m.u
 INSERT INTO ws_member_instruments (member_id, instrument_id, is_primary, skill_level)
 SELECT m.id, i.id, 'N', 'ADVANCED' FROM ws_members m, ws_instruments i WHERE m.username = 'ANA_VOCAL' AND i.code = 'BACKING_VOCAL';
 
--- Pedro: Electric Guitar (Primary), Acoustic Guitar
+INSERT INTO ws_members (username, full_name, email, phone, member_role, max_services_month, is_active) VALUES
+('TIAGO_BASS', 'Tiago Oliveira', 'tiago.o@worshipflow.local', '+55 11 99999-0008', 'MUSICIAN', 4, 'Y');
+
+INSERT INTO ws_members (username, full_name, email, phone, member_role, max_services_month, is_active) VALUES
+('RAFAEL_DRUMS', 'Rafael Lima', 'rafael.l@worshipflow.local', '+55 11 99999-0009', 'MUSICIAN', 3, 'Y');
+
+-- Pedro: Electric Guitar (Primary), Acoustic Guitar, Bass
 INSERT INTO ws_member_instruments (member_id, instrument_id, is_primary, skill_level)
 SELECT m.id, i.id, 'Y', 'ADVANCED' FROM ws_members m, ws_instruments i WHERE m.username = 'PEDRO_GUITAR' AND i.code = 'ELEC_GUITAR';
 INSERT INTO ws_member_instruments (member_id, instrument_id, is_primary, skill_level)
 SELECT m.id, i.id, 'N', 'INTERMEDIATE' FROM ws_members m, ws_instruments i WHERE m.username = 'PEDRO_GUITAR' AND i.code = 'AC_GUITAR';
+INSERT INTO ws_member_instruments (member_id, instrument_id, is_primary, skill_level)
+SELECT m.id, i.id, 'N', 'INTERMEDIATE' FROM ws_members m, ws_instruments i WHERE m.username = 'PEDRO_GUITAR' AND i.code = 'BASS';
 
 -- Gabriela: Backing Vocal (Primary), Lead Vocal
 INSERT INTO ws_member_instruments (member_id, instrument_id, is_primary, skill_level)
 SELECT m.id, i.id, 'Y', 'INTERMEDIATE' FROM ws_members m, ws_instruments i WHERE m.username = 'GABI_VOCAL' AND i.code = 'BACKING_VOCAL';
 INSERT INTO ws_member_instruments (member_id, instrument_id, is_primary, skill_level)
 SELECT m.id, i.id, 'N', 'INTERMEDIATE' FROM ws_members m, ws_instruments i WHERE m.username = 'GABI_VOCAL' AND i.code = 'LEAD_VOCAL';
+
+-- Tiago: Bass (Primary)
+INSERT INTO ws_member_instruments (member_id, instrument_id, is_primary, skill_level)
+SELECT m.id, i.id, 'Y', 'ADVANCED' FROM ws_members m, ws_instruments i WHERE m.username = 'TIAGO_BASS' AND i.code = 'BASS';
+
+-- Rafael: Drums (Primary)
+INSERT INTO ws_member_instruments (member_id, instrument_id, is_primary, skill_level)
+SELECT m.id, i.id, 'Y', 'ADVANCED' FROM ws_members m, ws_instruments i WHERE m.username = 'RAFAEL_DRUMS' AND i.code = 'DRUMS';
 
 -- ----------------------------------------------------------------------------
 -- 5. Seed Song Repertoire

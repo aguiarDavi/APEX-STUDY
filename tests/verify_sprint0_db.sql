@@ -86,10 +86,10 @@ BEGIN
     assert_equals('Seed Template Slots Count', v_count, 10);
 
     SELECT COUNT(*) INTO v_count FROM ws_members;
-    assert_equals('Seed Members Count', v_count, 7);
+    assert_equals('Seed Members Count', v_count, 9);
 
     SELECT COUNT(*) INTO v_count FROM ws_member_instruments;
-    assert_equals('Seed Member Instruments Mapping Count', v_count, 12);
+    assert_equals('Seed Member Instruments Mapping Count', v_count, 15);
 
     SELECT COUNT(*) INTO v_count FROM ws_songs;
     assert_equals('Seed Song Repertoire Count', v_count, 5);
@@ -124,4 +124,3 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('====================================================');
 END;
 /
-EXIT;
