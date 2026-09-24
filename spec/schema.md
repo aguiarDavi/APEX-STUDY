@@ -335,9 +335,7 @@ Songs selected for a service in planned execution order with service-specific ke
 | `service_key` | `VARCHAR2(10)` | NO | - | Key used for this specific service |
 | `notes` | `VARCHAR2(500)` | YES | NULL | Arrangement or transition notes |
 
-- **Unique Constraint**: `CONSTRAINT UQ_WS_SERVICE_SETLIST UNIQUE (service_id, play_order)`
-- **Key Constraint**: Same standard musical key check as `WS_SONGS`.
-- **Index**: `CREATE INDEX idx_ws_setlist_service ON ws_service_setlist (service_id, play_order);`
+- **Unique Constraint & Index**: `CONSTRAINT UQ_WS_SERVICE_SETLIST UNIQUE (service_id, play_order)` (implicitly creates the supporting unique index).
 
 ---
 

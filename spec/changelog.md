@@ -6,6 +6,27 @@ This document records the architectural history, modifications made, challenges 
 
 ## 1. Activity Log
 
+### [2026-09-24] - Sprint 0: Database Foundation & Baseline Data Complete
+
+#### Added
+- **DDL Migration Script ([`db/01_tables_and_indexes.sql`](file:///home/davi/Dev/apex-gemini/db/01_tables_and_indexes.sql))**:
+  - Implemented all 12 core tables with `WS_` prefix: `WS_MEMBERS`, `WS_INSTRUMENTS`, `WS_MEMBER_INSTRUMENTS`, `WS_SERVICE_TEMPLATES`, `WS_SERVICE_TEMPLATE_SLOTS`, `WS_BANDS`, `WS_BAND_MEMBERS`, `WS_MEMBER_BLOCKOUTS`, `WS_SERVICES`, `WS_SERVICE_ROSTER`, `WS_SONGS`, `WS_SERVICE_SETLIST`.
+  - Added 12 primary keys (`PK_WS_...`), 17 foreign keys (`FK_WS_...`), unique constraints (`UQ_WS_...`), and check constraints (`CK_WS_...`).
+  - Added 10 performance indexes (`IDX_WS_...`) on foreign keys and search columns.
+  - Implemented proactive retroactive blockout detection view `WS_V_ROSTER_CONFLICTS`.
+- **Baseline Seed Data Script ([`db/02_seed_data.sql`](file:///home/davi/Dev/apex-gemini/db/02_seed_data.sql))**:
+  - Populated 8 standard instruments (`AC_GUITAR`, `ELEC_GUITAR`, `BASS`, `DRUMS`, `KEYS`, `LEAD_VOCAL`, `BACKING_VOCAL`, `SOUND_TECH`).
+  - Populated 2 default service templates: "Standard 6-Piece Band" (7 slots) and "Acoustic Trio" (3 slots).
+  - Populated 7 volunteer members (Davi as Leader, 6 musicians) and 12 instrument proficiency mappings.
+  - Populated 5 core song repertoire entries with tempo, default key, and YouTube rehearsal references.
+- **Automated Database Test Suite ([`tests/verify_sprint0_db.sql`](file:///home/davi/Dev/apex-gemini/tests/verify_sprint0_db.sql))**:
+  - PL/SQL automated assertion suite verifying table existence, view status, constraint enforcement, and seed counts.
+  - Live execution verified 100% test pass rate against Oracle Database 23ai (`local-26ai-davi`).
+- **Agent Governance Updates ([`AGENTS.md`](file:///home/davi/Dev/apex-gemini/AGENTS.md))**:
+  - Enforced mandatory changelog logging for every development iteration.
+  - Mandated comprehensive Playwright E2E testing in `tests/` (`tests/e2e/`) for every UI feature.
+  - Enforced project workspace boundaries: `teste/` for APEX application and `tests/` for all test suites.
+
 ### [2026-09-24] - Architecture, Specification & Sprint Planning
 
 #### Added
@@ -59,6 +80,18 @@ This document records the architectural history, modifications made, challenges 
 * **The Resolution**:
   Implemented pessimistic row locking (`SELECT service_date FROM ws_services WHERE id = p_service_id FOR UPDATE;`) in `ws_pkg_scheduler` to serialize schedule generation. For end-user APEX forms, added `row_version_number` tokens to prevent stale updates.
 
+### 5. ORA-01408 on Redundant Supporting Index
+* **The Problem**:
+  `CREATE INDEX idx_ws_setlist_service ON ws_service_setlist (service_id, play_order)` failed with `ORA-01408: this column list is already indexed`.
+* **The Resolution**:
+  Oracle Database automatically provisions and maintains a unique index to enforce `CONSTRAINT UQ_WS_SERVICE_SETLIST UNIQUE (service_id, play_order)`. Removed the explicit duplicate index command and updated documentation in `spec/schema.md`.
+
+### 6. Column Length Masking Check Constraint Validation
+* **The Problem**:
+  In automated assertion tests for `ck_ws_songs_key`, inserting test string `'INVALID_KEY'` threw `ORA-12899` (value too large for column, actual: 11, max: 10) instead of the expected `ORA-02290` check constraint violation.
+* **The Resolution**:
+  Swapped the test payload to `'H'` (1 char), ensuring length validation passed and isolating the exact check constraint evaluation under `ORA-02290`.
+
 ---
 
 ## 3. Discoveries & Architectural Insights
@@ -69,3 +102,5 @@ This document records the architectural history, modifications made, challenges 
    - Storing complex ChordPro markup or lyrics files often leads to clutter and maintenance issues. Keeping the catalog lean (Title, Artist, Default Key, YouTube URL) with service transposition keys provides 95% of the utility with zero clutter.
 3. **Mobile-First 1-Click Cards**:
    - Volunteers abandon desktop-heavy church apps. In Oracle APEX, implementing a Cards region with high-contrast Green Accept / Red Decline buttons and modal YouTube playback provides an experience that rivals native mobile apps.
+4. **Oracle 23ai Implicit Index Efficiency**:
+   - Declarative `UNIQUE` constraints in Oracle 23ai eliminate redundant index overhead. Paired with SQLcl MCP toolchain, schema DDL and test assertions execute synchronously within milliseconds with zero drift.
